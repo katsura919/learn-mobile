@@ -6,6 +6,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import LottieView from "lottie-react-native";
 import axios from "axios";
 
+const apiUrl = process.env.EXPO_PUBLIC_API_URL; 
+console.log('API URL:', apiUrl);
 export default function LoginScreen() {
   const router = useRouter();
   const [username, setUsername] = useState("");
@@ -19,7 +21,7 @@ export default function LoginScreen() {
     }
 
     try {
-      const response = await axios.post(`http://10.0.2.2:5000/api/auth/login`, {
+      const response = await axios.post(`${apiUrl}/auth/login`, {
         username,
         password,
       });

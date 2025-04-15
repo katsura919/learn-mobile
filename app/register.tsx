@@ -17,7 +17,8 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  console.log(firstName, lastName, username, email, password, confirmPassword);
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL; 
+  console.log('API URL:', apiUrl);
   const handleRegister = async () => {
     if (!firstName || !lastName || !username || !email || !password || !confirmPassword) {
       Alert.alert("Error", "All fields are required.");
@@ -31,7 +32,7 @@ export default function RegisterScreen() {
 
     try {
       setLoading(true);
-      const response = await axios.post(`http://10.0.2.2:5000/api/auth/register`, {
+      const response = await axios.post(`${apiUrl}auth/register`, {
         firstName,
         lastName,
         username,
