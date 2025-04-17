@@ -25,16 +25,10 @@ export const fetchHomeStats = async (userId: string) => {
 
 export const fetchLatestLessons = async (userId: string) => {
   try {
-    const res = await api.get(`/lessons/latest/${userId}`);
-
-    if (res.data && Array.isArray(res.data.lessons)) {
-      return res.data.lessons;
-    } else {
-      console.error('No latest lessons found in response');
-      return [];
-    }
-  } catch (error) {
-    console.error('Error fetching latest lessons:', error);
+    const res = await api.get("/lessons");
+    return res.data;
+  } catch (error: any) {
+    console.error("Error fetching user lessons:", error.response?.data || error.message);
     return [];
   }
 };
