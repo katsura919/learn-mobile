@@ -64,20 +64,21 @@ export default function CreateLessonScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.header}>
-          <View style={styles.notebookRing} />
-          <Text style={styles.title}>New Lesson</Text>
-          <Text style={styles.subtitle}>Fill your notebook page</Text>
-        </View>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerText}>Lesson</Text>
+        <TouchableOpacity onPress={handleCreateLesson} disabled={loading}>
+          <Ionicons name="checkmark" size={28} color="#ffffff" />
+        </TouchableOpacity>
+      </View>
 
-        <View style={styles.notebookPage}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.card}>
           <View style={styles.formGroup}>
             <Text style={styles.label}>Title</Text>
             <TextInput
               style={[styles.input, error && styles.inputError]}
               placeholder="Lesson title..."
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#6b7280"
               value={title}
               onChangeText={(text) => {
                 setTitle(text);
@@ -99,18 +100,14 @@ export default function CreateLessonScreen() {
                   }
                 }}
                 style={styles.picker}
-                dropdownIconColor="#6b7280"
+                dropdownIconColor="#a3a3a3"
               >
                 <Picker.Item label="Select category" value="" enabled={false} />
                 <Picker.Item label="Default" value="Default" />
                 {categories.map((cat) => (
                   <Picker.Item key={cat._id} label={cat.name} value={cat.name} />
                 ))}
-                <Picker.Item 
-                  label="Add new category..." 
-                  value="add-category" 
-                  color="#4f46e5" 
-                />
+                <Picker.Item label="Add new category..." value="add-category" color="#22d3ee" />
               </Picker>
             </View>
           </View>
@@ -120,9 +117,9 @@ export default function CreateLessonScreen() {
             <TextInput
               style={[styles.textArea, error && styles.inputError]}
               placeholder="Write your lesson content here..."
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#6b7280"
               multiline
-              numberOfLines={8}
+              numberOfLines={10}
               value={content}
               onChangeText={(text) => {
                 setContent(text);
@@ -132,18 +129,6 @@ export default function CreateLessonScreen() {
           </View>
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleCreateLesson}
-            activeOpacity={0.8}
-            disabled={loading}
-          >
-            <Ionicons name="bookmark-outline" size={20} color="#fff" />
-            <Text style={styles.buttonText}>
-              {loading ? "Saving..." : "Save Lesson"}
-            </Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -161,119 +146,65 @@ export default function CreateLessonScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#1c1c1e", // slate-900
   },
   scrollContainer: {
     padding: 20,
-    paddingBottom: 40,
   },
-  header: {
-    marginBottom: 24,
-    paddingLeft: 16,
-    position: "relative",
+  headerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 20,
+    paddingBottom: 10,
   },
-  notebookRing: {
-    position: "absolute",
-    left: 0,
-    top: 4,
-    height: "80%",
-    width: 12,
-    backgroundColor: "#e5e7eb",
-    borderTopRightRadius: 6,
-    borderBottomRightRadius: 6,
-  },
-  title: {
-    fontSize: 28,
+  headerText: {
+    color: "#f1f5f9", // slate-100
+    fontSize: 22,
     fontWeight: "700",
-    color: "#111827",
-    marginBottom: 4,
   },
-  subtitle: {
-    fontSize: 16,
-    color: "#6b7280",
-  },
-  notebookPage: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
+  card: {
   },
   formGroup: {
     marginBottom: 20,
   },
   label: {
-    color: "#374151",
+    color: "#e2e8f0", // slate-200
     fontSize: 14,
     fontWeight: "600",
     marginBottom: 8,
-    letterSpacing: 0.5,
   },
   input: {
-    backgroundColor: "#f9fafb",
-    color: "#111827",
-    borderRadius: 8,
+    backgroundColor: "#2b2b2b", // slate-700
+    color: "#f8fafc", // slate-50
+    borderRadius: 12,
     padding: 14,
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
   },
   inputError: {
     borderColor: "#ef4444",
   },
   textArea: {
-    backgroundColor: "#f9fafb",
-    color: "#111827",
-    borderRadius: 8,
+    backgroundColor: "#2b2b2b",
+    color: "#f8fafc",
+    borderRadius: 12,
     padding: 14,
     fontSize: 16,
     textAlignVertical: "top",
     minHeight: 160,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
   },
   pickerContainer: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: "hidden",
+    backgroundColor: "#2b2b2b",
   },
   picker: {
-    backgroundColor: "#f9fafb",
-    color: "#111827",
-  },
-  button: {
-    backgroundColor: "#4f46e5",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 8,
-    padding: 16,
-    marginTop: 16,
-    gap: 10,
-    shadowColor: "#4f46e5",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  buttonDisabled: {
-    backgroundColor: "#a5b4fc",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+    color: "#f8fafc",
   },
   errorText: {
-    color: "#ef4444",
+    color: "#f87171",
     fontSize: 14,
-    marginTop: 8,
+    marginTop: -10,
     marginBottom: 4,
   },
 });

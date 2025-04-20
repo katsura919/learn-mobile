@@ -36,11 +36,7 @@ export default function ProfileScreen() {
     fetchData();
   }, []);
 
-  async function handleLogout() {
-    await SecureStore.deleteItemAsync("userToken");
-    await SecureStore.deleteItemAsync("userData");  // Optionally clear the user data too
-    router.replace("/login");
-  }
+
 
   if (!user) return null;
 
@@ -77,12 +73,6 @@ export default function ProfileScreen() {
           <Text style={styles.statLabel}>Accuracy</Text>
         </View>
       </View>
-
-      {/* Logout Button */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Ionicons name="log-out-outline" size={18} color="#fff" />
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
     </View>
   );
 }

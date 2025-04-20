@@ -99,7 +99,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         renderItem={({ item, index }) => (
           <TouchableOpacity
-            onPress={() => router.push(`/lesson/${item._id}`)}
+            onPress={() => router.push(`/Lesson/${item._id}`)}
             style={{
               backgroundColor: ["#fef3c7", "#e0f2fe", "#f0fdfa", "#fae8ff", "#fef2f2"][index % 5],
               padding: 16,
