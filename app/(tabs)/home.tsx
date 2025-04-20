@@ -1,5 +1,6 @@
 // home.tsx
 import { View, Text, TouchableOpacity, FlatList, Image, StatusBar, ActivityIndicator, Dimensions } from "react-native";
+import { useFocusEffect } from "expo-router";
 import { useEffect, useState } from "react";
 import * as SecureStore from 'expo-secure-store';
 import { router } from "expo-router";
@@ -18,7 +19,7 @@ export default function HomeScreen() {
   const [isGrid, setIsGrid] = useState(false);
   const [sortOrderAsc, setSortOrderAsc] = useState(false);
 
-  useEffect(() => {
+  useFocusEffect(() => {
     const loadData = async () => {
       try {
         const storedUserData = await SecureStore.getItemAsync("userData");
@@ -40,7 +41,7 @@ export default function HomeScreen() {
     };
 
     loadData();
-  }, []);
+  },);
 
   const filteredLessons = lessons
     .filter(lesson =>
