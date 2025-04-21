@@ -12,6 +12,18 @@ export const getUserLessons = async () => {
   }
 };
 
+export const fetchLessonsByCategory = async (categoryId: string) => {
+  try {
+    const res = await api.get(`/lessons/category/${categoryId}`);
+    // Return the data array from the response object
+    return res.data.data || []; // Return the nested array or empty array if undefined
+  } catch (err) {
+    console.error('Error fetching lessons by category:', err);
+    return []; // Return empty array on error
+  }
+};
+
+
 export const getLessonById = async (id: string) => {
     const token = await SecureStore.getItemAsync("userToken");
     if (!token) throw new Error("Unauthorized");
@@ -44,3 +56,4 @@ export const getLessonById = async (id: string) => {
   
     return response.data;
   };
+
