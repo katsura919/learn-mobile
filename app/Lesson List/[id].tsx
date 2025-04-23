@@ -1,40 +1,77 @@
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, Dimensions, StatusBar } from "react-native";
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, Dimensions, Alert } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
-import { router } from "expo-router";
+import { useEffect, useState, useCallback } from "react";
+import { useRouter, useFocusEffect } from "expo-router";
 import { fetchLessonsByCategory } from "../../utils/lessonServices";
 import SearchBar from "../../components/home-searchbar";
-import { Feather } from '@expo/vector-icons';
-
+import { Feather, Entypo } from '@expo/vector-icons';
+import { Menu, Provider } from 'react-native-paper';
+import { deleteCategory, updateCategory } from "@/utils/categoryService";
+import LessonListHeader from '../../components/lesson-list-header';
 const screenWidth = Dimensions.get('window').width;
 
 export default function LessonList() {
-  const { id } = useLocalSearchParams();
+  const { id, name } = useLocalSearchParams();
+  const router = useRouter();
+
   const [lessons, setLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string>("");
   const [search, setSearch] = useState("");
   const [isGrid, setIsGrid] = useState(false);
   const [sortOrderAsc, setSortOrderAsc] = useState(false);
-  console.log(lessons)
+  const [visible, setVisible] = useState(false);
 
-useEffect(() => {
-  const loadLessons = async () => {
+  const openMenu = () => setVisible(true);
+  const closeMenu = () => setVisible(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadLessons = async () => {
+        try {
+          setLoading(true);
+          const lessonData = await fetchLessonsByCategory(id as string);
+          setLessons(lessonData);
+        } catch (error) {
+          console.error("Error:", error);
+          setLessons([]);
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      loadLessons();
+    }, [id]) 
+  );
+  const handleRename = async (newName: string) => {
     try {
-      setLoading(true);
-      const lessonData = await fetchLessonsByCategory(id as string);
-      setLessons(lessonData); // We're now guaranteed this is an array
-    } catch (error) {
-      console.error("Error:", error);
-      setLessons([]); // Fallback empty array
-    } finally {
-      setLoading(false);
+      const updated = await updateCategory(id as string, newName);
+      Alert.alert("Success", `Category renamed to ${updated.name}`);
+    } catch (err: any) {
+      Alert.alert("Rename Failed", err.error || "Something went wrong.");
     }
   };
 
-  loadLessons();
-}, [id]);
-  
+  const handleDelete = async () => {
+    Alert.alert("Confirm Delete", "Are you sure you want to delete this category?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await deleteCategory(id as string);
+            Alert.alert("Deleted", "Category deleted successfully.");
+            router.back(); // 👈 useRouter for going back
+          } catch (err: any) {
+            Alert.alert("Delete Failed", err.error || "Something went wrong.");
+          }
+        },
+      },
+    ]);
+  };
+
+
+
   // Safely filter lessons - ensure lessons is always an array
   const filteredLessons = Array.isArray(lessons) 
     ? lessons
@@ -55,16 +92,29 @@ useEffect(() => {
       </View>
     );
   }
-  const handleBackPress = () => {
-    router.back(); // Or use router.push('/') to go to a specific route
-  };
+
   
   return (
-    <View style={{ flex: 1, backgroundColor: "#1c1c1e", padding: 20 }}>
-      <StatusBar barStyle="light-content" backgroundColor="black" />
+    <Provider>
+      <View style={{flex: 1, backgroundColor: "#ffffff", paddingHorizontal: 16 }}>
+      
 
-      {/* SearchBar */}
-      <SearchBar value={search} onChangeText={setSearch} />
+      {/* Header */}
+      <View style={{flexDirection: "column", height: 130 }}>
+        {/* LessonListHeader */}
+        <LessonListHeader
+          name={name as string}
+          visible={visible}
+          openMenu={openMenu}
+          closeMenu={closeMenu}
+          onRename={handleRename}
+          onDelete={handleDelete}
+        />
+
+        {/* Search Bar */}
+        <SearchBar value={search} onChangeText={setSearch} />
+     </View>
+     
 
       {/* View + Sort Toggle */}
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -72,16 +122,16 @@ useEffect(() => {
           onPress={() => setIsGrid(!isGrid)}
           style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
         >
-          <Feather name={isGrid ? "list" : "grid"} size={18} color="#ccc" />
-          <Text style={{ color: "#ccc", fontSize: 13 }}>{isGrid ? "List view" : "Grid view"}</Text>
+          <Feather name={isGrid ? "list" : "grid"} size={18} color="#333" />
+          <Text style={{ color: "#333", fontSize: 13 }}>{isGrid ? "List view" : "Grid view"}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => setSortOrderAsc(!sortOrderAsc)}
           style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
         >
-          <Feather name={sortOrderAsc ? "arrow-up" : "arrow-down"} size={18} color="#ccc" />
-          <Text style={{ color: "#ccc", fontSize: 13 }}>
+          <Feather name={sortOrderAsc ? "arrow-up" : "arrow-down"} size={18} color="#333" />
+          <Text style={{ color: "#333", fontSize: 13 }}>
             {sortOrderAsc ? "Oldest first" : "Newest first"}
           </Text>
         </TouchableOpacity>
@@ -104,16 +154,17 @@ useEffect(() => {
                 padding: 16,
                 borderRadius: 20,
                 marginBottom: 16,
+                elevation: 2,
                 width: isGrid ? (screenWidth - 60) / 2 : "100%"
               }}
             >
               <Text style={{ fontSize: 16, fontWeight: "bold", marginBottom: 6, color: "#111" }}>
                 {item.title}
               </Text>
-              <Text style={{ color: "#444", fontSize: 13, marginBottom: 6 }} numberOfLines={2} ellipsizeMode="tail">
+              <Text style={{ color: "#555", fontSize: 13, marginBottom: 6 }} numberOfLines={4} ellipsizeMode="tail">
                 {item.content}
               </Text>
-              <Text style={{ color: "#333", fontSize: 12 }}>
+              <Text style={{ color: "#777", fontSize: 12 }}>
                 {new Date(item.createdAt).toLocaleDateString()}
               </Text>
             </TouchableOpacity>
@@ -122,9 +173,10 @@ useEffect(() => {
         />
       ) : (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <Text style={{ color: "#ccc" }}>No lessons found</Text>
+          <Text style={{ color: "#666" }}>No lessons found</Text>
         </View>
       )}
-    </View>
+      </View>
+    </Provider>
   );
 }

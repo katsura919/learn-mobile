@@ -5,13 +5,14 @@ import { Feather } from "@expo/vector-icons";
 export default function SearchBar({ value, onChangeText }: { value: string, onChangeText: (text: string) => void }) {
   return (
     <View style={{
-      backgroundColor: "#2b2b2b",
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#fff',
+      paddingHorizontal: 12,
+      paddingVertical: 1,
       borderRadius: 12,
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: 16,
-      paddingVertical: 10,
-      marginBottom: 16
+      marginBottom: 20,
+      elevation: 2,
     }}>
       <Feather name="search" size={20} color="#aaa" />
       <TextInput
