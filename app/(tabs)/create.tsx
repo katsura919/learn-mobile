@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { SafeAreaView, ScrollView, Alert } from "react-native";
 import { Text, TextInput, Button, HelperText } from "react-native-paper";
 import { useRouter } from "expo-router";
 import * as lessonService from "@/utils/createLessonServices";
-import { theme } from "@/hooks/theme";
-import AppHeader from "@/components/create/create-header"; 
+import { useAppTheme } from "@/hooks/themeContext"; // Import useAppTheme
+import AppHeader from "@/components/create/create-header";
 import CategoryModal from "@/components/create/create-category-modal";
+
 
 export default function CreateLessonScreen() {
   const router = useRouter();
+  const { theme } = useAppTheme(); 
+  
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [categoryName, setCategoryName] = useState("Default");
@@ -60,9 +63,9 @@ export default function CreateLessonScreen() {
         title="Create Lesson"
         onSave={handleCreateLesson} // Pass the save function to the header
       />
+      
       <ScrollView contentContainerStyle={{ padding: 20 }}>
-
-        <TextInput
+      <TextInput
           label="Title"
           mode="outlined"
           value={title}
@@ -71,7 +74,7 @@ export default function CreateLessonScreen() {
             setError("");
           }}
           placeholder="Lesson title..."
-          style={{ marginBottom: 20, fontFamily: 'Inter-Regular',}}
+          style={{ marginBottom: 20, fontFamily: 'Inter-Regular' }}
           theme={{ colors: { primary: theme.colors.primary, error: theme.colors.accent } }}
           onBlur={() => setTouched((prev) => ({ ...prev, title: true }))} 
         />
@@ -79,7 +82,9 @@ export default function CreateLessonScreen() {
           Title is required.
         </HelperText>
 
-        <Text style={{ marginBottom: 8, fontFamily: 'Inter-Regular', color: theme.colors.onBackground }}>Category</Text>
+        <Text style={{ marginBottom: 8, fontFamily: 'Inter-Regular', color: theme.colors.onBackground }}>
+          Category
+        </Text>
         <Button
           mode="outlined"
           style={{ marginBottom: 20 }}
@@ -101,15 +106,15 @@ export default function CreateLessonScreen() {
           placeholder="Write your lesson content here..."
           multiline
           numberOfLines={5}
-          style={{ marginBottom: 20, fontFamily: 'Inter-Regular', }}
+          style={{ marginBottom: 20, fontFamily: 'Inter-Regular' }}
           theme={{ colors: { primary: theme.colors.primary, error: theme.colors.accent } }}
-          onBlur={() => setTouched((prev) => ({ ...prev, content: true }))}
+          onBlur={() => setTouched((prev) => ({ ...prev, content: true }))} 
         />
         <HelperText type="error" visible={hasContentError}>
           Content is required.
         </HelperText>
       </ScrollView>
-
+        
       {/* Category Modal */}
       <CategoryModal
         visible={modalVisible}
@@ -121,7 +126,7 @@ export default function CreateLessonScreen() {
         value={newCategory}
         onChangeText={setNewCategory}
         categories={categories} // Pass categories to the modal
-        onCategorySelect={(selectedCategory:any) => {
+        onCategorySelect={(selectedCategory: any) => {
           setCategoryName(selectedCategory); // Set the selected category
           setModalVisible(false); // Close the modal
         }}

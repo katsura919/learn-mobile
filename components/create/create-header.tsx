@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Appbar } from 'react-native-paper';
 import { useRouter } from 'expo-router';
-import { theme} from '@/hooks/theme';
+import { useAppTheme } from '@/hooks/themeContext'; // use theme context
+
 type AppHeaderProps = {
   title: string;
   onSave: () => void;
@@ -10,19 +11,22 @@ type AppHeaderProps = {
 
 const AppHeader: React.FC<AppHeaderProps> = ({ title, onSave }) => {
   const router = useRouter();
+  const { theme } = useAppTheme(); // get current theme
 
   return (
-    <Appbar.Header style={styles.header}>
-      <Appbar.BackAction onPress={() => router.back()} />
-      <Appbar.Content title={title}  titleStyle={{ fontFamily: 'Inter-Bold', alignItems: 'center',color: theme.colors.onBackground }} />
-      <Appbar.Action icon="check" onPress={onSave} />
+    <Appbar.Header style={[styles.header, { backgroundColor: theme.colors.surface }]}>
+      <Appbar.BackAction color={theme.colors.onSurface} onPress={() => router.back()} />
+      <Appbar.Content
+        title={title}
+        titleStyle={{ fontFamily: 'Inter-Bold', color: theme.colors.onSurface }}
+      />
+      <Appbar.Action icon="check" color={theme.colors.primary} onPress={onSave} />
     </Appbar.Header>
   );
 };
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: 'white',
     elevation: 4,
   },
 });

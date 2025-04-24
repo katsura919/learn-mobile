@@ -1,24 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  StatusBar,
-  TouchableOpacity,
-  FlatList,
-  Dimensions,
-} from 'react-native';
-import {
-  TextInput,
-  Appbar,
-  Avatar,
-  Card,
-  Text,
-  FAB,
-  useTheme,
-} from 'react-native-paper';
+import React, { useState, useRef } from 'react';
+import { View, StatusBar, TouchableOpacity, FlatList, Dimensions, Animated } from 'react-native';
+import { TextInput, Appbar, Avatar, Card, Text, FAB, useTheme } from 'react-native-paper';
 import * as SecureStore from 'expo-secure-store';
 import { getCategories } from '../../utils/homeServices';
 import { router, useFocusEffect } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useAppTheme } from '@/hooks/themeContext'; 
 
 const { width } = Dimensions.get('window');
 const CARD_PADDING = 16;
@@ -26,12 +13,23 @@ const SPACING = 12;
 const GRID_COLUMNS = 2;
 
 const Home = () => {
+  const { theme, isDark, toggleTheme } = useAppTheme(); 
   const [categories, setCategories] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [user, setUser] = useState<any>(null);
   const [sortAsc, setSortAsc] = useState(true);
   const [isGridView, setIsGridView] = useState(true);
-  const theme = useTheme();
+  const [showSearch, setShowSearch] = useState(false);
+
+  const searchAnim = useRef(new Animated.Value(width - 32)).current;
+
+  const toggleSearch = () => {
+    Animated.timing(searchAnim, {
+      toValue: searchTerm ? width - 32 : width * 0.5,
+      duration: 250,
+      useNativeDriver: false,
+    }).start();
+  };
 
   const filteredSorted = [...categories]
     .filter((cat) => cat.name.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -78,7 +76,7 @@ const Home = () => {
         }}
       >
         <Avatar.Icon
-          icon="notebook-outline"
+          icon="folder-open"
           size={isGridView ? 56 : 48}
           style={{
             marginBottom: isGridView ? 10 : 0,
@@ -103,42 +101,69 @@ const Home = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
+      <StatusBar 
+          barStyle={isDark ? 'light-content' : 'dark-content'} 
+          backgroundColor={theme.colors.background} 
+      />
 
-      {/* Header */}
-      <Appbar.Header style={{ backgroundColor: theme.colors.background, elevation: 0 }}>
-        <Appbar.Content
-          title="Notebooks"
-          titleStyle={{ fontFamily: 'Inter-Bold', color: theme.colors.onBackground }}
+  
+      <Appbar.Header style={{ backgroundColor: theme.colors.background, elevation: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        
+          {user?.profilePic && (
+            <TouchableOpacity onPress={() => router.push('/profile')}>
+              <Avatar.Image
+                size={48}  
+                source={{ uri: user.profilePic }}
+                style={{ marginLeft: 12 }}
+              />
+            </TouchableOpacity>
+          )}
+
+       
+          {user?.firstName && user?.lastName && (
+            <Text
+              style={{
+                marginLeft: 12,
+                fontSize: 18,
+                fontFamily: 'Inter-Medium', 
+                color: theme.colors.onBackground,
+              }}
+            >
+              {user.firstName} {user.lastName}
+            </Text>
+          )}
+        </View>
+
+       
+        <Appbar.Action
+          icon={isDark ? 'white-balance-sunny' : 'weather-night'}
+          onPress={toggleTheme}
         />
-        {user?.profilePic && (
-          <TouchableOpacity onPress={() => router.push('/profile')}>
-            <Avatar.Image
-              size={36}
-              source={{ uri: user.profilePic }}
-              style={{ marginRight: 12 }}
-            />
-          </TouchableOpacity>
-        )}
       </Appbar.Header>
 
-      {/* Search & Controls */}
+    
       <View style={{ paddingHorizontal: CARD_PADDING }}>
-        <TextInput
-          mode="outlined"
-          placeholder="Search notes..."
-          value={searchTerm}
-          onChangeText={setSearchTerm}
-          left={<TextInput.Icon icon="magnify" />}
-          style={{ marginBottom: 16 }}
-          theme={{
-            roundness: 12,
-            colors: {
-              primary: theme.colors.primary,
-              background: theme.colors.surface,
-            },
-          }}
-        />
+        <Animated.View style={{ width: searchAnim }}>
+          <TextInput
+            mode="outlined"
+            placeholder="Search notes..."
+            value={searchTerm}
+            onChangeText={(text) => {
+              setSearchTerm(text);
+              toggleSearch();
+            }}
+            left={<TextInput.Icon icon="magnify" />}
+            style={{ marginBottom: 16 }}
+            theme={{
+              roundness: 12,
+              colors: {
+                primary: theme.colors.primary,
+                background: theme.colors.surface,
+              },
+            }}
+          />
+        </Animated.View>
 
         <View
           style={{
@@ -178,7 +203,7 @@ const Home = () => {
         </View>
       </View>
 
-      {/* Grid/List */}
+   
       <FlatList
         contentContainerStyle={{
           paddingHorizontal: CARD_PADDING,
@@ -188,10 +213,9 @@ const Home = () => {
         renderItem={renderItem}
         keyExtractor={(item) => item._id}
         numColumns={isGridView ? GRID_COLUMNS : 1}
-        key={isGridView ? 'grid' : 'list'} // force layout switch
+        key={isGridView ? 'grid' : 'list'} 
       />
 
-      {/* FAB */}
       <FAB
         icon="plus"
         label="New Lesson"
