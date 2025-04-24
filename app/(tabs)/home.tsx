@@ -1,130 +1,153 @@
 import React, { useEffect, useState } from 'react';
 import {
   View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
   StatusBar,
-  TextInput,
-  Image,
+  TouchableOpacity,
+  FlatList,
+  Dimensions,
 } from 'react-native';
-import {useFonts} from 'expo-font';
-import * as SecureStore from "expo-secure-store";
+import {
+  TextInput,
+  Appbar,
+  Avatar,
+  Card,
+  Text,
+  FAB,
+  useTheme,
+} from 'react-native-paper';
+import * as SecureStore from 'expo-secure-store';
 import { getCategories } from '../../utils/homeServices';
 import { router, useFocusEffect } from 'expo-router';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import CreateLessonBtn from '../../components/home-plus-btn'
+import { MaterialIcons } from '@expo/vector-icons';
 
-const notebookIcons = [
-  require('../../assets/icons/notebooks/notebook-green.png'),
-  require('../../assets/icons/notebooks/notebook-red.png'),
-  require('../../assets/icons/notebooks/notebook-blue.png'),
-  require('../../assets/icons/notebooks/notebook-yellow.png'),
-];
+const { width } = Dimensions.get('window');
+const CARD_PADDING = 16;
+const SPACING = 12;
+const GRID_COLUMNS = 2;
 
 const Home = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [user, setUser] = useState<any>(null);
-  const [sortAsc, setSortAsc] = useState(true); 
+  const [sortAsc, setSortAsc] = useState(true);
   const [isGridView, setIsGridView] = useState(true);
+  const theme = useTheme();
 
-  const [fontsLoaded] = useFonts({
-    'Poppins-Black': require('../../assets/fonts/Poppins-Black.ttf'),
-    'Poppins-Bold': require('../../assets/fonts/Poppins-Bold.ttf'),
-    'Poppins-Regular': require('../../assets/fonts/Poppins-Regular.ttf'),
-    'Poppins-SemiBold': require('../../assets/fonts/Poppins-SemiBold.ttf'),
-    'Inter': require('../../assets/fonts/Inter.ttf'),
-    'Inter-Regular': require('../../assets/fonts/Inter-Regular.ttf'),
-    'Inter-SemiBold': require('../../assets/fonts/Inter-SemiBold.ttf'),
-  });
-
-  const sortedFilteredCategories = [...categories]
-    .filter(cat =>
-      cat.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+  const filteredSorted = [...categories]
+    .filter((cat) => cat.name.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) =>
       sortAsc
         ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-
   useFocusEffect(() => {
     const fetchCategories = async () => {
       try {
-        const userData = await SecureStore.getItemAsync("userData");
-          if (userData) {
-            const parsedUserData = JSON.parse(userData);
-            setUser(parsedUserData);      
-          }
+        const userData = await SecureStore.getItemAsync('userData');
+        if (userData) setUser(JSON.parse(userData));
 
         const data = await getCategories();
         setCategories(data);
-      } catch (error) {
-        console.log('Failed to load categories');
+      } catch (err) {
+        console.log('Error fetching categories', err);
       }
     };
 
     fetchCategories();
   });
 
-  const filteredCategories = categories.filter(cat =>
-    cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const renderItem = ({ item }: { item: any }) => (
+    <Card
+      onPress={() => router.push(`/Lesson List/${item._id}?name=${item.name}`)}
+      style={{
+        flex: 1,
+        margin: SPACING / 2,
+        borderRadius: 16,
+        elevation: 3,
+        backgroundColor: theme.colors.surface,
+      }}
+    >
+      <Card.Content
+        style={{
+          flexDirection: isGridView ? 'column' : 'row',
+          alignItems: 'center',
+          justifyContent: isGridView ? 'center' : 'flex-start',
+          paddingVertical: 16,
+          paddingHorizontal: 8,
+        }}
+      >
+        <Avatar.Icon
+          icon="notebook-outline"
+          size={isGridView ? 56 : 48}
+          style={{
+            marginBottom: isGridView ? 10 : 0,
+            marginRight: isGridView ? 0 : 12,
+            backgroundColor: theme.colors.primary,
+          }}
+          color={theme.colors.onPrimary}
+        />
+        <Text
+          variant="titleMedium"
+          style={{
+            textAlign: isGridView ? 'center' : 'left',
+            fontFamily: 'Inter-Medium',
+            color: theme.colors.onSurface,
+          }}
+        >
+          {item.name}
+        </Text>
+      </Card.Content>
+    </Card>
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#fefeff' }}>
-      <StatusBar barStyle="light-content" backgroundColor="#121212" />
+    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
 
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingTop: 5,
-          paddingBottom: 80, // Increased paddingBottom for better scroll behavior
-        }}
-      >
-        {/* Header */}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',marginBottom: 10, marginTop: 10}}>
-          <Text style={{ fontSize: 26, fontFamily: "Inter-Bold", color: '#222' }}>Notebooks</Text>
+      {/* Header */}
+      <Appbar.Header style={{ backgroundColor: theme.colors.background, elevation: 0 }}>
+        <Appbar.Content
+          title="Notebooks"
+          titleStyle={{ fontFamily: 'Inter-Bold', color: theme.colors.onBackground }}
+        />
+        {user?.profilePic && (
           <TouchableOpacity onPress={() => router.push('/profile')}>
-            <Image
-              source={{ uri: user?.profilePic }}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 25,
-              }}
+            <Avatar.Image
+              size={36}
+              source={{ uri: user.profilePic }}
+              style={{ marginRight: 12 }}
             />
           </TouchableOpacity>
-        </View>
+        )}
+      </Appbar.Header>
 
-        {/* Search Bar */}
-        <View style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          backgroundColor: '#fff',
-          paddingHorizontal: 12,
-          paddingVertical: 1,
-          borderRadius: 12,
-          marginBottom: 20,
-          marginTop: 10,
-          elevation: 2,
-        }}>
-          <Ionicons name="search-outline" size={20} color="#999" style={{ marginRight: 8 }} />
-          <TextInput
-            placeholder="Search notes..."
-            placeholderTextColor="#999"
-            value={searchTerm}
-            onChangeText={setSearchTerm}
-            style={{ flex: 1, fontSize: 14, color: '#333', fontFamily: "Inter-Regular" }}
-          />
-        </View>
+      {/* Search & Controls */}
+      <View style={{ paddingHorizontal: CARD_PADDING }}>
+        <TextInput
+          mode="outlined"
+          placeholder="Search notes..."
+          value={searchTerm}
+          onChangeText={setSearchTerm}
+          left={<TextInput.Icon icon="magnify" />}
+          style={{ marginBottom: 16 }}
+          theme={{
+            roundness: 12,
+            colors: {
+              primary: theme.colors.primary,
+              background: theme.colors.surface,
+            },
+          }}
+        />
 
-     
-        {/* View + Sort Controls */}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          {/* View Toggle (Left) */}
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginBottom: 12,
+            alignItems: 'center',
+          }}
+        >
           <TouchableOpacity
             onPress={() => setIsGridView(!isGridView)}
             style={{ flexDirection: 'row', alignItems: 'center' }}
@@ -132,81 +155,55 @@ const Home = () => {
             <MaterialIcons
               name={isGridView ? 'grid-view' : 'list'}
               size={20}
-              color="#444"
+              color={theme.colors.onBackground}
             />
-            <Text style={{ marginLeft: 4, fontSize: 12, color: '#444', fontFamily: "Inter-Regular" }}>
-              {isGridView ? 'Grid' : 'List'}
+            <Text style={{ marginLeft: 6, fontFamily: 'Inter-Regular', color: theme.colors.onBackground }}>
+              View: {isGridView ? 'Grid' : 'List'}
             </Text>
           </TouchableOpacity>
 
-          {/* Sort By Date (Right) */}
           <TouchableOpacity
             onPress={() => setSortAsc(!sortAsc)}
             style={{ flexDirection: 'row', alignItems: 'center' }}
           >
-            <Text style={{ marginRight: 4, fontSize: 12, color: '#444', fontFamily: "Inter-Regular" }}>
+            <Text style={{ marginRight: 6, fontFamily: 'Inter-Regular', color: theme.colors.onBackground }}>
               Sort by Date
             </Text>
             <MaterialIcons
               name={sortAsc ? 'arrow-upward' : 'arrow-downward'}
               size={20}
-              color="#444"
+              color={theme.colors.onBackground}
             />
           </TouchableOpacity>
         </View>
+      </View>
 
+      {/* Grid/List */}
+      <FlatList
+        contentContainerStyle={{
+          paddingHorizontal: CARD_PADDING,
+          paddingBottom: 100,
+        }}
+        data={filteredSorted}
+        renderItem={renderItem}
+        keyExtractor={(item) => item._id}
+        numColumns={isGridView ? GRID_COLUMNS : 1}
+        key={isGridView ? 'grid' : 'list'} // force layout switch
+      />
 
-        {/* Categories */}
-        <View
-          style={{
-            flexDirection: isGridView ? 'row' : 'column',
-            flexWrap: isGridView ? 'wrap' : 'nowrap',
-            justifyContent: isGridView ? 'space-between' : 'flex-start',
-            marginTop: 10,
-          }}
-        >
-          {sortedFilteredCategories.map((cat, index) => (
-            <TouchableOpacity
-              key={cat._id}
-              onPress={() => router.push(`/Lesson List/${cat._id}?name=${cat.name}`)}
-              style={{
-                width: isGridView ? '47%' : '100%',
-                flexDirection: isGridView ? 'column' : 'row',
-                alignItems: 'center',
-                marginBottom: 20,
-                padding: isGridView ? 0 : 10,
-                backgroundColor: isGridView ? 'transparent' : '#f4f4f4',
-                borderRadius: 10,
-              }}
-            >
-              <Image
-                source={notebookIcons[index % notebookIcons.length]}
-                style={{
-                  width: isGridView ? 120 : 60,
-                  height: isGridView ? 120 : 60,
-                  marginRight: isGridView ? 0 : 12,
-                  resizeMode: 'contain',
-                }}
-              />
-              <Text
-                style={{
-                  fontWeight: '600',
-                  fontSize: 13,
-                  color: '#1e1e1e',
-                  textAlign: isGridView ? 'center' : 'left',
-                  fontFamily: "Inter-Regular",
-                }}
-              >
-                {cat.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-      </ScrollView>
-
-      {/* Floating Button for Creating Lesson */}
-      <CreateLessonBtn />
+      {/* FAB */}
+      <FAB
+        icon="plus"
+        label="New Lesson"
+        style={{
+          position: 'absolute',
+          right: 16,
+          bottom: 16,
+          backgroundColor: theme.colors.primary,
+        }}
+        color={theme.colors.onPrimary}
+        onPress={() => router.push('/create')}
+      />
     </View>
   );
 };
