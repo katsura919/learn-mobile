@@ -18,7 +18,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ title, onSave }) => {
       <Appbar.BackAction color={theme.colors.onSurface} onPress={() => router.back()} />
       <Appbar.Content
         title={title}
-        titleStyle={{ fontFamily: 'Inter-Bold', color: theme.colors.onSurface }}
+        titleStyle={{ fontFamily: 'Inter-Bold', fontSize: 16, color: theme.colors.onSurface }}
       />
       <Appbar.Action icon="check" color={theme.colors.primary} onPress={onSave} />
     </Appbar.Header>

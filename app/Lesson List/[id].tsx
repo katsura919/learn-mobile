@@ -1,28 +1,30 @@
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, Dimensions, Alert } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { View, FlatList, Dimensions, Alert, ScrollView, TouchableOpacity, StatusBar } from "react-native";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { useEffect, useState, useCallback } from "react";
-import { useRouter, useFocusEffect } from "expo-router";
 import { fetchLessonsByCategory } from "../../utils/lessonServices";
-import SearchBar from "../../components/home-searchbar";
-import { Feather, Entypo } from '@expo/vector-icons';
-import { Menu, Provider } from 'react-native-paper';
+import SearchBar from "../../components/Lesson List/lesson-list-searchbar";
+import { IconButton, Card, Text, ActivityIndicator } from "react-native-paper";
 import { deleteCategory, updateCategory } from "@/utils/categoryService";
-import LessonListHeader from '../../components/lesson-list-header';
-const screenWidth = Dimensions.get('window').width;
+import LessonListHeader from "../../components/Lesson List/lesson-list-header";
+import { useAppTheme } from "@/hooks/themeContext";
+import { MaterialIcons } from '@expo/vector-icons';
+const screenWidth = Dimensions.get("window").width;
 
 export default function LessonList() {
   const { id, name } = useLocalSearchParams();
   const router = useRouter();
+  const { theme, isDark, toggleTheme } = useAppTheme(); 
+  const { colors } = theme;
 
   const [lessons, setLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [isGrid, setIsGrid] = useState(false);
   const [sortOrderAsc, setSortOrderAsc] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
 
-  const openMenu = () => setVisible(true);
-  const closeMenu = () => setVisible(false);
+  const openMenu = () => setMenuVisible(true);
+  const closeMenu = () => setMenuVisible(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -38,10 +40,11 @@ export default function LessonList() {
           setLoading(false);
         }
       };
-  
+
       loadLessons();
-    }, [id]) 
+    }, [id])
   );
+
   const handleRename = async (newName: string) => {
     try {
       const updated = await updateCategory(id as string, newName);
@@ -52,7 +55,7 @@ export default function LessonList() {
   };
 
   const handleDelete = async () => {
-    Alert.alert("Confirm Delete", "Are you sure you want to delete this category?", [
+    Alert.alert("Delete Category", "Are you sure you want to delete this category?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Delete",
@@ -61,7 +64,7 @@ export default function LessonList() {
           try {
             await deleteCategory(id as string);
             Alert.alert("Deleted", "Category deleted successfully.");
-            router.back(); // 👈 useRouter for going back
+            router.back();
           } catch (err: any) {
             Alert.alert("Delete Failed", err.error || "Something went wrong.");
           }
@@ -70,12 +73,9 @@ export default function LessonList() {
     ]);
   };
 
-
-
-  // Safely filter lessons - ensure lessons is always an array
-  const filteredLessons = Array.isArray(lessons) 
+  const filteredLessons = Array.isArray(lessons)
     ? lessons
-        .filter(lesson => 
+        .filter((lesson) =>
           lesson?.title?.toLowerCase().includes(search.toLowerCase())
         )
         .sort((a, b) => {
@@ -85,98 +85,140 @@ export default function LessonList() {
         })
     : [];
 
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#1c1c1e" }}>
-        <ActivityIndicator size="large" color="#ffffff" />
-      </View>
-    );
-  }
-
-  
   return (
-    <Provider>
-      <View style={{flex: 1, backgroundColor: "#ffffff", paddingHorizontal: 16 }}>
+    <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center' }}>
+      <StatusBar 
+        barStyle={isDark ? 'light-content' : 'dark-content'} 
+        backgroundColor={theme.colors.background} 
+      />
       
-
-      {/* Header */}
-      <View style={{flexDirection: "column", height: 130 }}>
-        {/* LessonListHeader */}
-        <LessonListHeader
-          name={name as string}
-          visible={visible}
-          openMenu={openMenu}
-          closeMenu={closeMenu}
-          onRename={handleRename}
-          onDelete={handleDelete}
-        />
-
-        {/* Search Bar */}
-        <SearchBar value={search} onChangeText={setSearch} />
-     </View>
-     
-
-      {/* View + Sort Toggle */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      <LessonListHeader
+        name={name as string}
+        onRename={handleRename}
+        onDelete={handleDelete}
+        visible={menuVisible}
+        openMenu={openMenu}
+        closeMenu={closeMenu}
+      />
+    
+      <SearchBar value={search} onChangeText={setSearch} />
+    
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginBottom: 12,
+          alignItems: 'center',
+          paddingHorizontal: 10, 
+          marginLeft: 10,
+        }}
+      >
         <TouchableOpacity
           onPress={() => setIsGrid(!isGrid)}
-          style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+          style={{ flexDirection: 'row', alignItems: 'center' }}
         >
-          <Feather name={isGrid ? "list" : "grid"} size={18} color="#333" />
-          <Text style={{ color: "#333", fontSize: 13 }}>{isGrid ? "List view" : "Grid view"}</Text>
+          <MaterialIcons
+            name={isGrid ? 'grid-view' : 'list'}
+            size={15}
+            color={theme.colors.onBackground}
+          />
+          <Text
+            style={{
+              fontFamily: 'Inter-Regular',
+              fontSize: 12,
+              color: theme.colors.onBackground,
+            }}
+          >
+            {isGrid ? ' List view' : ' Grid view'}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => setSortOrderAsc(!sortOrderAsc)}
-          style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginRight: 20,
+          }}
         >
-          <Feather name={sortOrderAsc ? "arrow-up" : "arrow-down"} size={18} color="#333" />
-          <Text style={{ color: "#333", fontSize: 13 }}>
-            {sortOrderAsc ? "Oldest first" : "Newest first"}
+          <MaterialIcons
+            name={sortOrderAsc ? 'arrow-upward' : 'arrow-downward'}
+            size={15}
+            color={theme.colors.onBackground}
+          />
+          <Text
+            style={{
+              fontFamily: 'Inter-Regular',
+              fontSize: 12,
+              color: theme.colors.onBackground,
+            }}
+          >
+            {sortOrderAsc ? ' Oldest' : ' Newest'}
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Lessons List */}
-      {filteredLessons.length > 0 ? (
-        <FlatList
-          data={filteredLessons}
-          key={isGrid ? "g" : "l"}
-          numColumns={isGrid ? 2 : 1}
-          columnWrapperStyle={isGrid ? { justifyContent: "space-between" } : undefined}
-          keyExtractor={(item) => item._id}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item, index }) => (
-            <TouchableOpacity
-              onPress={() => router.push(`/Lesson/${item._id}`)}
-              style={{
-                backgroundColor: ["#fef3c7", "#e0f2fe", "#f0fdfa", "#fae8ff", "#fef2f2"][index % 5],
-                padding: 16,
-                borderRadius: 20,
-                marginBottom: 16,
-                elevation: 2,
-                width: isGrid ? (screenWidth - 60) / 2 : "100%"
-              }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: "bold", marginBottom: 6, color: "#111" }}>
-                {item.title}
-              </Text>
-              <Text style={{ color: "#555", fontSize: 13, marginBottom: 6 }} numberOfLines={4} ellipsizeMode="tail">
-                {item.content}
-              </Text>
-              <Text style={{ color: "#777", fontSize: 12 }}>
-                {new Date(item.createdAt).toLocaleDateString()}
-              </Text>
-            </TouchableOpacity>
+      <View style={{ flex: 1, backgroundColor: colors.background, paddingHorizontal: 16 }}>
+        <View style={{ flex: 1 }}>
+          {filteredLessons.length > 0 ? (
+            <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+              <View
+                style={{
+                  flexDirection: isGrid ? "row" : "column",
+                  flexWrap: "wrap",
+                  justifyContent: isGrid ? "space-between" : "flex-start",
+                }}
+              >
+                {filteredLessons.map((item) => (
+                  <Card
+                    key={item._id}
+                    mode="elevated"
+                    style={{
+                      backgroundColor: colors.surface,
+                      marginBottom: 16,
+                      borderRadius: 20,
+                      width: isGrid ? (screenWidth - 60) / 2 : "100%",
+                      elevation: 2,
+                      marginRight: isGrid ? 8 : 0,
+                    }}
+                    onPress={() => router.push(`/Lesson/${item._id}`)}
+                  >
+                    <Card.Content>
+                      <Text variant="titleMedium" style={{ color: colors.onSurface, marginBottom: 6 }}>
+                        {item.title}
+                      </Text>
+                      <Text
+                        variant="bodySmall"
+                        style={{ color: colors.onSurface }}
+                        numberOfLines={4}
+                      >
+                        {item.content}
+                      </Text>
+                      <Text
+                        style={{
+                          marginTop: 12,
+                          fontSize: 12,
+                          color: colors.outline,
+                        }}
+                      >
+                        {new Date(item.createdAt).toLocaleDateString()}
+                      </Text>
+                    </Card.Content>
+                  </Card>
+                ))}
+              </View>
+            </ScrollView>
+          ) : loading ? (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+          ) : (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+              <Text style={{ color: colors.onBackground }}>No lessons found.</Text>
+            </View>
           )}
-          contentContainerStyle={{ paddingBottom: 24 }}
-        />
-      ) : (
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <Text style={{ color: "#666" }}>No lessons found</Text>
         </View>
-      )}
       </View>
-    </Provider>
+    </View>
   );
 }

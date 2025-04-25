@@ -65,7 +65,21 @@ export default function CreateLessonScreen() {
       />
       
       <ScrollView contentContainerStyle={{ padding: 20 }}>
-      <TextInput
+        <Text style={{ marginBottom: 8, fontFamily: 'Inter-Regular', color: theme.colors.onBackground }}>
+            Notebook
+          </Text>
+          <Button
+            mode="outlined"
+            style={{ marginBottom: 20 }}
+            theme={{ roundness: 1}}
+            onPress={() => setModalVisible(true)} // Open category modal
+            icon="folder-plus"
+            buttonColor={theme.colors.surface}
+          >
+            {categoryName || "Select Category"}
+        </Button>
+
+        <TextInput
           label="Title"
           mode="outlined"
           value={title}
@@ -74,26 +88,16 @@ export default function CreateLessonScreen() {
             setError("");
           }}
           placeholder="Lesson title..."
-          style={{ marginBottom: 20, fontFamily: 'Inter-Regular' }}
-          theme={{ colors: { primary: theme.colors.primary, error: theme.colors.accent } }}
+          style={{ fontFamily: 'Inter-Regular' }}
+          theme={{  roundness: 6, colors: { primary: theme.colors.primary, error: theme.colors.accent } }}
           onBlur={() => setTouched((prev) => ({ ...prev, title: true }))} 
         />
-        <HelperText type="error" visible={hasTitleError}>
+
+        <HelperText type="error" visible={hasTitleError} style= {{fontFamily: 'Inter-Regular'}}>
           Title is required.
         </HelperText>
 
-        <Text style={{ marginBottom: 8, fontFamily: 'Inter-Regular', color: theme.colors.onBackground }}>
-          Category
-        </Text>
-        <Button
-          mode="outlined"
-          style={{ marginBottom: 20 }}
-          onPress={() => setModalVisible(true)} // Open category modal
-          icon="folder-plus"
-          buttonColor={theme.colors.surface}
-        >
-          {categoryName || "Select Category"}
-        </Button>
+  
 
         <TextInput
           label="Content"
@@ -106,11 +110,11 @@ export default function CreateLessonScreen() {
           placeholder="Write your lesson content here..."
           multiline
           numberOfLines={5}
-          style={{ marginBottom: 20, fontFamily: 'Inter-Regular' }}
-          theme={{ colors: { primary: theme.colors.primary, error: theme.colors.accent } }}
+          style={{flex: 1, fontFamily: 'Inter-Regular' }}
+          theme={{ roundness: 6, colors: { primary: theme.colors.primary, error: theme.colors.accent } }}
           onBlur={() => setTouched((prev) => ({ ...prev, content: true }))} 
         />
-        <HelperText type="error" visible={hasContentError}>
+        <HelperText type="error" visible={hasContentError} style= {{fontFamily: 'Inter-Regular'}}>
           Content is required.
         </HelperText>
       </ScrollView>

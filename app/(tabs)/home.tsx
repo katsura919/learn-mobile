@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { View, StatusBar, TouchableOpacity, FlatList, Dimensions, Animated } from 'react-native';
-import { TextInput, Appbar, Avatar, Card, Text, FAB, useTheme } from 'react-native-paper';
+import { TextInput, Appbar, Avatar, Card, Text, FAB, useTheme, AnimatedFAB } from 'react-native-paper';
 import * as SecureStore from 'expo-secure-store';
 import { getCategories } from '../../utils/homeServices';
 import { router, useFocusEffect } from 'expo-router';
@@ -20,7 +20,7 @@ const Home = () => {
   const [sortAsc, setSortAsc] = useState(true);
   const [isGridView, setIsGridView] = useState(true);
   const [showSearch, setShowSearch] = useState(false);
-
+  const [isExtended, setIsExtended] = React.useState(true);
   const searchAnim = useRef(new Animated.Value(width - 32)).current;
 
   const toggleSearch = () => {
@@ -86,10 +86,10 @@ const Home = () => {
           color={theme.colors.onPrimary}
         />
         <Text
-          variant="titleMedium"
+          variant="titleSmall"
           style={{
             textAlign: isGridView ? 'center' : 'left',
-            fontFamily: 'Inter-Medium',
+            fontFamily: 'Inter-Regular',
             color: theme.colors.onSurface,
           }}
         >
@@ -97,7 +97,8 @@ const Home = () => {
         </Text>
       </Card.Content>
     </Card>
-  );
+  );  
+
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
@@ -107,13 +108,13 @@ const Home = () => {
       />
 
   
-      <Appbar.Header style={{ backgroundColor: theme.colors.background, elevation: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Appbar.Header style={{ backgroundColor: theme.colors.background, elevation: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         
           {user?.profilePic && (
             <TouchableOpacity onPress={() => router.push('/profile')}>
               <Avatar.Image
-                size={48}  
+                size={40}  
                 source={{ uri: user.profilePic }}
                 style={{ marginLeft: 12 }}
               />
@@ -125,7 +126,7 @@ const Home = () => {
             <Text
               style={{
                 marginLeft: 12,
-                fontSize: 18,
+                fontSize: 16,
                 fontFamily: 'Inter-Medium', 
                 color: theme.colors.onBackground,
               }}
@@ -153,10 +154,10 @@ const Home = () => {
               setSearchTerm(text);
               toggleSearch();
             }}
-            left={<TextInput.Icon icon="magnify" />}
-            style={{ marginBottom: 16 }}
+            left={<TextInput.Icon icon="magnify" size={20}/>}
+            style={{ marginBottom: 16, height: 45}}
             theme={{
-              roundness: 12,
+              roundness: 6,
               colors: {
                 primary: theme.colors.primary,
                 background: theme.colors.surface,
@@ -179,10 +180,10 @@ const Home = () => {
           >
             <MaterialIcons
               name={isGridView ? 'grid-view' : 'list'}
-              size={20}
+              size={15}
               color={theme.colors.onBackground}
             />
-            <Text style={{ marginLeft: 6, fontFamily: 'Inter-Regular', color: theme.colors.onBackground }}>
+            <Text style={{ marginLeft: 6, fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.onBackground }}>
               View: {isGridView ? 'Grid' : 'List'}
             </Text>
           </TouchableOpacity>
@@ -191,12 +192,12 @@ const Home = () => {
             onPress={() => setSortAsc(!sortAsc)}
             style={{ flexDirection: 'row', alignItems: 'center' }}
           >
-            <Text style={{ marginRight: 6, fontFamily: 'Inter-Regular', color: theme.colors.onBackground }}>
+            <Text style={{ marginRight: 6, fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.onBackground }}>
               Sort by Date
             </Text>
             <MaterialIcons
               name={sortAsc ? 'arrow-upward' : 'arrow-downward'}
-              size={20}
+              size={15}
               color={theme.colors.onBackground}
             />
           </TouchableOpacity>
@@ -221,9 +222,11 @@ const Home = () => {
         label="New Lesson"
         style={{
           position: 'absolute',
+          height: 55,
           right: 16,
           bottom: 16,
           backgroundColor: theme.colors.primary,
+          borderRadius: 7
         }}
         color={theme.colors.onPrimary}
         onPress={() => router.push('/create')}
