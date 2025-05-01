@@ -1,17 +1,20 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import * as SecureStore from "expo-secure-store";
+import React from "react";
+import { View, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
+import { useAppTheme } from "@/hooks/themeContext";
+import { List, Button, Appbar, useTheme } from "react-native-paper";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { theme } = useAppTheme();
+  const paperTheme = useTheme();
 
   const handleLogout = async () => {
     try {
-      // Clear user data from SecureStore
       await SecureStore.deleteItemAsync("userToken");
       await SecureStore.deleteItemAsync("userData");
-      // Navigate to login screen
       router.replace("/login");
     } catch (error) {
       Alert.alert("Error", "Failed to log out.");
@@ -20,23 +23,46 @@ export default function SettingsScreen() {
   };
 
   const handleChangePassword = () => {
-    // Navigate to change password screen (add the screen in the app)
     router.push("/Change Password");
   };
 
   return (
-    <View style={styles.container}>
-      {/* Change Password */}
-      <TouchableOpacity style={styles.option} onPress={handleChangePassword}>
-        <Ionicons name="key-outline" size={24} color="#4B5563" />
-        <Text style={styles.optionText}>Change Password</Text>
-      </TouchableOpacity>
+    <View style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
+      {/* Header */}
+      <Appbar.Header style={{ backgroundColor: "transparent", elevation: 0 }}>
+        <Appbar.BackAction onPress={() => router.back()} />
+        <Appbar.Content title="Settings" titleStyle={{ color: paperTheme.colors.onBackground, fontFamily: 'Inter-Medium', fontSize: 16}} />
+      </Appbar.Header>
 
-      {/* Logout */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Ionicons name="log-out-outline" size={18} color="#fff" />
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
+      {/* Options */}
+      <View style={styles.content}>
+       <List.Item
+          title="Profile"
+          left={() => <Ionicons name="person-outline" size={24} color={paperTheme.colors.onSurface} />}
+          onPress={handleChangePassword}
+          style={[styles.option, { backgroundColor: paperTheme.colors.surface,  }]}
+          titleStyle={{ color: paperTheme.colors.onSurface, fontFamily: 'Inter-Regular', fontSize: 13, }}
+        />
+        <List.Item
+          title="Change Password"
+          left={() => <Ionicons name="key-outline" size={24} color={paperTheme.colors.onSurface} />}
+          onPress={handleChangePassword}
+          style={[styles.option, { backgroundColor: paperTheme.colors.surface,  }]}
+          titleStyle={{ color: paperTheme.colors.onSurface, fontFamily: 'Inter-Regular', fontSize: 13, }}
+        />
+
+        <Button
+          mode="contained"
+          onPress={handleLogout}
+          style={styles.logoutButton}
+          buttonColor="#ef4444"
+          icon="logout"
+          textColor="#fff"
+          contentStyle={{ paddingVertical: 8 }}
+        >
+          Logout
+        </Button>
+      </View>
     </View>
   );
 }
@@ -44,52 +70,20 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9fafb",
+  },
+  content: {
     paddingHorizontal: 20,
-    paddingTop: 50,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#111827",
+    paddingTop: 16,
   },
   option: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  optionText: {
-    marginLeft: 16,
-    fontSize: 18,
-    color: "#111827",
+    paddingHorizontal: 12,
+    elevation: 1,
+    
   },
   logoutButton: {
-    backgroundColor: "#ef4444",
     marginTop: 32,
-    borderRadius: 8,
-    paddingVertical: 14,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-  },
-  logoutText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
+    borderRadius: 12,
   },
 });

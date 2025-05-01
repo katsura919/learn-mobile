@@ -52,7 +52,7 @@ const Home = () => {
       } catch (err) {
         console.log('Error fetching categories', err);
       } finally {
-        setIsLoading(false); // <-- Always set loading to false after request
+        setIsLoading(false); 
       }
     };
 

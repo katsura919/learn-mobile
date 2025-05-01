@@ -1,12 +1,16 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, Image, Alert } from "react-native";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Appbar, Card, Text, useTheme, Avatar } from "react-native-paper";
 import * as SecureStore from "expo-secure-store";
-import { useEffect, useState } from "react";
-import { fetchHomeStats } from "../../utils/profileServices"; // Assuming the fetchHomeStats is still used for stats fetching
+import { fetchHomeStats } from "../../utils/profileServices";
+import { useAppTheme } from "@/hooks/themeContext";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { theme } = useAppTheme();
+  const paperTheme = useTheme();
+
   const [user, setUser] = useState<any>(null);
   const [stats, setStats] = useState({
     totalLessons: 0,
@@ -17,14 +21,11 @@ export default function ProfileScreen() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Retrieve user data from SecureStore
         const userData = await SecureStore.getItemAsync("userData");
         if (userData) {
-          const parsedUserData = JSON.parse(userData);
-          setUser(parsedUserData);
-
-          // Fetch user stats using the user ID from the stored data
-          const statsData = await fetchHomeStats(parsedUserData.id);
+          const parsed = JSON.parse(userData);
+          setUser(parsed);
+          const statsData = await fetchHomeStats(parsed.id);
           setStats(statsData);
         }
       } catch (error) {
@@ -32,47 +33,74 @@ export default function ProfileScreen() {
         console.error(error);
       }
     };
-
     fetchData();
   }, []);
-
-
 
   if (!user) return null;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Profile</Text>
-        <TouchableOpacity onPress={() => router.push("/Settings")}>
-          <Ionicons name="settings-outline" size={24} color="#4B5563" />
-        </TouchableOpacity>
-      </View>
+      <Appbar.Header mode="small" style={{ backgroundColor: theme.colors.background }}>
+        <Appbar.BackAction onPress={() => router.back()} />
+        <Appbar.Content title="Profile" titleStyle={{ color: theme.colors.onBackground, fontFamily: 'Inter-Medium', fontSize: 16,  }} />
+        <Appbar.Action icon="cog-outline" onPress={() => router.push("/Settings")} />
+      </Appbar.Header>
 
       {/* Profile Info */}
-      <View style={styles.profileCard}>
-        <Image source={{ uri: user.profilePic }} style={styles.avatar} />
-        <Text style={styles.name}>{user.firstName} {user.lastName}</Text>
-        <Text style={styles.username}>@{user.username}</Text>
-        <Text style={styles.email}>{user.email}</Text>
-      </View>
+      <Card style={[styles.profileCard, { backgroundColor: theme.colors.surface }]}>
+        <Card.Content style={{ alignItems: "center" }}>
+          <Avatar.Image
+                     size={90}
+                     source={
+                       user?.profilePic
+                         ? { uri: user.profilePic }
+                         : require('@/assets/images/profile.png')
+                     }
+                     style={styles.avatar}
+            />
+           
+          <Text variant="titleLarge" style={{ color: theme.colors.onBackground, fontFamily: 'Inter-Medium', fontSize: 16 }}>
+            {user.firstName} {user.lastName}
+          </Text>
+          <Text variant="bodyMedium" style={{ color: theme.colors.onBackground, fontFamily: 'Inter-Regular', fontSize: 12, opacity: 0.7 }}>
+            @{user.username}
+          </Text>
+          <Text variant="bodySmall" style={{ color: theme.colors.onBackground, fontFamily: 'Inter-Regular', fontSize: 12, opacity: 0.5 }}>
+            {user.email}
+          </Text>
+        </Card.Content>
+      </Card>
 
       {/* Stats */}
-      <View style={styles.statsCard}>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{stats.totalLessons}</Text>
-          <Text style={styles.statLabel}>Lessons</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{stats.totalAttempts}</Text>
-          <Text style={styles.statLabel}>Quiz Attempts</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{stats.averageScore.toFixed(0)}%</Text>
-          <Text style={styles.statLabel}>Accuracy</Text>
-        </View>
-      </View>
+      <Card style={[styles.statsCard, { backgroundColor: theme.colors.surface }]}>
+        <Card.Content style={styles.statsContent}>
+          <View style={styles.statItem}>
+            <Text variant="titleMedium" style={{ color: theme.colors.onSurface, fontFamily: 'Inter-Regular' }}>
+              {stats.totalLessons}
+            </Text>
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurface, fontFamily: 'Inter-Regular',opacity: 0.6 }}>
+              Lessons
+            </Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text variant="titleMedium" style={{ color: theme.colors.onSurface, fontFamily: 'Inter-Regular' }}>
+              {stats.totalAttempts}
+            </Text>
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurface, fontFamily: 'Inter-Regular', opacity: 0.6 }}>
+              Quiz Attempts
+            </Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text variant="titleMedium" style={{ color: theme.colors.onSurface, fontFamily: 'Inter-Regular'}}>
+              {stats.averageScore.toFixed(0)}%
+            </Text>
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurface, fontFamily: 'Inter-Regular', opacity: 0.6 }}>
+              Accuracy
+            </Text>
+          </View>
+        </Card.Content>
+      </Card>
     </View>
   );
 }
@@ -80,86 +108,29 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9fafb",
-    paddingHorizontal: 20,
-    paddingTop: 10,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#111827",
   },
   profileCard: {
-    alignItems: "center",
-    marginBottom: 24,
+    marginHorizontal: 20,
+    marginTop: 10,
+    borderRadius: 12,
+    elevation: 2,
   },
   avatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    borderRadius: 50,
     marginBottom: 12,
   },
-  name: {
-    fontSize: 22,
-    fontWeight: "600",
-    color: "#111827",
-  },
-  username: {
-    fontSize: 16,
-    color: "#6b7280",
-  },
-  email: {
-    fontSize: 14,
-    color: "#9ca3af",
-    marginTop: 4,
-  },
   statsCard: {
-    backgroundColor: "#fff",
+    marginHorizontal: 20,
+    marginTop: 20,
     borderRadius: 12,
-    padding: 20,
+    elevation: 1,
+  },
+  statsContent: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
+    justifyContent: "space-around",
+    paddingVertical: 16,
   },
   statItem: {
     alignItems: "center",
-    flex: 1,
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#111827",
-  },
-  statLabel: {
-    fontSize: 14,
-    color: "#6b7280",
-    marginTop: 4,
-  },
-  logoutButton: {
-    backgroundColor: "#ef4444",
-    marginTop: 32,
-    borderRadius: 8,
-    paddingVertical: 14,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-  },
-  logoutText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
   },
 });

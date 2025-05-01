@@ -12,3 +12,9 @@ export type HeaderProps = {
     onClose: () => void;
     onSubmit: (newName: string) => void;
   };
+
+  export interface ChangePasswordPayload {
+    userId: string;
+    currentPassword: string;
+    newPassword: string;
+  }

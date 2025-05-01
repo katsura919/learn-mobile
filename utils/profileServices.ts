@@ -34,3 +34,30 @@ export const getUserById = async (userId: string) => {
     }
 };
   
+
+// Update user data (excluding profile picture)
+export const updateUser = async (userId: string, data: any) => {
+  const res = await api.put(`/users/${userId}`, data);
+  return res.data;
+};
+
+// Upload profile picture to Cloudinary via backend
+export const uploadProfilePic = async (userId: string, imageUri: string) => {
+  const formData = new FormData();
+  const fileName = imageUri.split('/').pop() || 'profile.jpg';
+  const fileType = fileName.split('.').pop();
+
+  formData.append('file', {
+    uri: imageUri,
+    name: fileName,
+    type: `image/${fileType}`,
+  } as any);
+
+  const res = await api.put(`/users/${userId}/upload-profile-pic`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  return res.data;
+};
