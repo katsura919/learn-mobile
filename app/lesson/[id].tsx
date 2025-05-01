@@ -1,18 +1,30 @@
 import { useEffect, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, TextInput } from "react-native";
+import { ScrollView, View, Alert } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { getLessonById, updateLesson, deleteLesson } from "../../utils/lessonServices";
 import { Feather } from "@expo/vector-icons";
-import { Menu, Provider } from "react-native-paper";
+import {
+  Provider,
+  Appbar,
+  Menu,
+  TextInput,
+  Button,
+  Text,
+  ActivityIndicator,
+  useTheme,
+} from "react-native-paper";
+import { useAppTheme } from "@/hooks/themeContext"; // <- import your custom hook
 
 export default function LessonScreen() {
   const { id } = useLocalSearchParams();
+  const { theme } = useAppTheme(); // <- get your custom theme
   const [lesson, setLesson] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [updatedTitle, setUpdatedTitle] = useState("");
   const [updatedContent, setUpdatedContent] = useState("");
   const [menuVisible, setMenuVisible] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     if (id) fetchLesson();
@@ -62,6 +74,7 @@ export default function LessonScreen() {
   };
 
   const handleUpdate = async () => {
+    setUpdating(true);
     try {
       await updateLesson(id as string, {
         title: updatedTitle,
@@ -72,118 +85,129 @@ export default function LessonScreen() {
       fetchLesson();
     } catch (error: any) {
       Alert.alert("Error", error.message || "Failed to update lesson.");
+    } finally {
+      setUpdating(false);
     }
   };
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#6200ee" />
-      </View>
+      <Provider>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: theme.colors.background }}>
+          <ActivityIndicator animating={true} size="large" color={theme.colors.primary} />
+        </View>
+      </Provider>
     );
   }
 
   if (!lesson) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 16 }}>
-        <Text style={{ fontSize: 16, color: "#dc3545" }}>Lesson not found.</Text>
-      </View>
+      <Provider>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: theme.colors.background }}>
+          <Text variant="titleMedium" style={{ color: theme.colors.accent }}>Lesson not found.</Text>
+        </View>
+      </Provider>
     );
   }
 
   return (
     <Provider>
-      <ScrollView style={{ flex: 1, backgroundColor: "#fff" }}>
-        {/* Custom Header */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: 16,
-            backgroundColor: "#fff",
-          }}
+      {/* App Bar */}
+      <Appbar.Header style={{ backgroundColor: theme.colors.surface }}>
+        <Appbar.BackAction onPress={() => router.back()} color={theme.colors.onSurface} />
+        <Appbar.Content title={editMode ? "Edit Lesson" : "Lesson"} titleStyle={{ color: theme.colors.onSurface, fontSize: 16, fontFamily: 'Inter-Medium',  }} />
+        <Appbar.Action
+          icon={editMode ? "close" : "pencil"}
+          onPress={() => setEditMode((prev) => !prev)}
+          color={theme.colors.onSurface}
+        />
+        <Menu
+          visible={menuVisible}
+          onDismiss={() => setMenuVisible(false)}
+          anchor={<Appbar.Action icon="dots-vertical" onPress={() => setMenuVisible(true)} color={theme.colors.onSurface} />}
         >
-          {/* Back Button */}
-          <TouchableOpacity onPress={() => router.back()}>
-            <Feather name="arrow-left" size={24} color="#333" />
-          </TouchableOpacity>
+          <Menu.Item onPress={handleStartQuiz} title="Start Quiz" />
+          <Menu.Item onPress={handleViewQuestions} title="View Questions" />
+          <Menu.Item onPress={handleDelete} title="Delete" titleStyle={{ color: theme.colors.accent }} />
+        </Menu>
+      </Appbar.Header>
 
-          {/* Spacer to center title if you want */}
-          <View style={{ flex: 1 }} />
-
-          {/* Right-side icons */}
-          <View style={{ flexDirection: "row", gap: 16 }}>
-            <TouchableOpacity onPress={() => setEditMode((prev) => !prev)}>
-              <Feather name={editMode ? "x" : "edit"} size={22} color="#333" />
-            </TouchableOpacity>
-
-            <Menu
-              visible={menuVisible}
-              onDismiss={() => setMenuVisible(false)}
-              anchor={
-                <TouchableOpacity onPress={() => setMenuVisible(true)}>
-                  <Feather name="more-vertical" size={22} color="#333" />
-                </TouchableOpacity>
-              }
-            >
-              <Menu.Item onPress={handleStartQuiz} title="Start Quiz" />
-              <Menu.Item onPress={handleViewQuestions} title="View Questions" />
-              <Menu.Item onPress={handleDelete} title="Delete" titleStyle={{ color: "#dc3545" }} />
-            </Menu>
-          </View>
-        </View>
-
-
-        {/* Lesson Content */}
-        <View style={{ padding: 16 }}>
+      <ScrollView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+        <View style={{ padding: 16}}>
           {editMode ? (
-            <>
-              <Text style={{ fontSize: 16, fontWeight: "bold", marginBottom: 4 }}>Title</Text>
-              <TextInput
-                value={updatedTitle}
-                onChangeText={setUpdatedTitle}
-                placeholder="Lesson Title"
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#ccc",
-                  padding: 12,
-                  borderRadius: 8,
-                  marginBottom: 16,
-                }}
-              />
-              <Text style={{ fontSize: 16, fontWeight: "bold", marginBottom: 4 }}>Content</Text>
-              <TextInput
-                value={updatedContent}
-                onChangeText={setUpdatedContent}
-                placeholder="Lesson Content"
-                multiline
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#ccc",
-                  padding: 12,
-                  borderRadius: 8,
-                  minHeight: 120,
-                  textAlignVertical: "top",
-                }}
-              />
-              <TouchableOpacity
-                onPress={handleUpdate}
-                style={{
-                  backgroundColor: "#28a745",
-                  padding: 14,
-                  borderRadius: 8,
-                  alignItems: "center",
-                  marginTop: 16,
-                }}
-              >
-                <Text style={{ color: "#fff", fontWeight: "bold" }}>Save Changes</Text>
-              </TouchableOpacity>
-            </>
+            updating ? (
+              <View style={{ paddingVertical: 40, justifyContent: "center", alignItems: "center" }}>
+                <ActivityIndicator animating={true} size="large" color={theme.colors.primary} />
+                <Text style={{ marginTop: 8, color: theme.colors.onBackground,  fontSize: 16,
+                fontFamily: 'Inter-Medium' }}>Saving...</Text>
+              </View>
+            ) : (
+              <>
+                <Text variant="titleMedium" style={{ marginBottom: 8, color: theme.colors.onBackground }}>Title</Text>
+                <TextInput
+                  value={updatedTitle}
+                  onChangeText={setUpdatedTitle}
+                  placeholder="Lesson Title"
+                  mode="outlined"
+                  style={{ marginBottom: 16,  fontSize: 16, fontFamily: 'Inter-Regular'}}
+                  outlineColor={theme.colors.outline}
+                  activeOutlineColor={theme.colors.primary}
+                  textColor={theme.colors.onBackground}
+                />
+
+                <Text variant="titleMedium" style={{ marginBottom: 8, color: theme.colors.onBackground }}>Content</Text>
+                <TextInput
+                  value={updatedContent}
+                  onChangeText={setUpdatedContent}
+                  placeholder="Lesson Content"
+                  multiline
+                  mode="outlined"
+                  style={{ marginBottom: 16, minHeight: 120 }}
+                  outlineColor={theme.colors.outline}
+                  activeOutlineColor={theme.colors.primary}
+                  textColor={theme.colors.onBackground}
+                />
+
+                <Button
+                  mode="contained"
+                  onPress={handleUpdate}
+                  disabled={updating}
+                  style={{ marginTop: 8, borderRadius: theme.roundness }}
+                  buttonColor={theme.colors.primary}
+                  textColor={theme.colors.onPrimary}
+                >
+                  Save Changes
+                </Button>
+              </>
+            )
           ) : (
             <>
-              <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 8 }}>{lesson.title}</Text>
-              <Text style={{ fontSize: 16, lineHeight: 24 }}>{lesson.content}</Text>
+              <View style={{ width: '100%' }}>
+                <Text 
+                  variant="headlineSmall" 
+                  style={{
+                    marginBottom: 8,
+                    color: theme.colors.onBackground,
+                    fontSize: 16,
+                    fontFamily: 'Inter-Medium',
+                    textAlign: 'justify',
+                  }}
+                >
+                  {lesson.title}
+                </Text>
+
+                <Text 
+                  variant="bodyMedium" 
+                  style={{
+                    color: theme.colors.onBackground,
+                    fontSize: 14,
+                    fontFamily: 'Inter-Regular',
+                    textAlign: 'justify', 
+                  }}
+                >
+                  {lesson.content}
+                </Text>
+              </View>
             </>
           )}
         </View>

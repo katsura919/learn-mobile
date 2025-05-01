@@ -1,65 +1,59 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Dimensions, Text } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+import { useTheme, Surface, Text } from 'react-native-paper';
 import LottieView from 'lottie-react-native';
 
 const { width, height } = Dimensions.get('window');
 
-// Messages to show one by one
 const messages = ['Reading lesson...', 'Learning...', 'Generating questions...'];
 
-const LoadingSpinner = () => {
+const GenerateSpinner = () => {
+  const { colors, dark } = useTheme();
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setIndex((prev) => {
-        if (prev < messages.length - 1) {
-          return prev + 1;
-        } else {
-          return 0; // start over if not unmounted yet
-        }
-      });
-    }, 2000); // 1.5 seconds per message
+      setIndex((prev) => (prev < messages.length - 1 ? prev + 1 : 0));
+    }, 2000);
 
-    return () => clearInterval(interval); // Cleanup on unmount
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <View style={styles.container}>
+    <Surface style={[styles.container, { backgroundColor: dark ? colors.background : '#fefeff' }]}>
       <LottieView
         source={require('../assets/lotties/generate.json')}
         autoPlay
         loop
         style={styles.lottie}
       />
-      <Text style={styles.text}>{messages[index]}</Text>
-    </View>
+      <Text variant="titleMedium" style={[styles.text, { color: colors.onBackground }]}>
+        {messages[index]}
+      </Text>
+    </Surface>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
+    flex: 1,
     width,
     height,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fefeff',
-    zIndex: 999,
+    elevation: 4, 
   },
   lottie: {
-    width: 250,
-    height: 250,
+    width: 220,
+    height: 220,
+    marginBottom: 20,
   },
   text: {
-    marginTop: 12,
     fontSize: 16,
-    color: '#1e1e1e',
-    fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     textAlign: 'center',
+    paddingHorizontal: 20,
   },
 });
 
-export default LoadingSpinner;
+export default GenerateSpinner;

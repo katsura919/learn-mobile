@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { View, StatusBar, TouchableOpacity, FlatList, Dimensions, Animated } from 'react-native';
-import { TextInput, Appbar, Avatar, Card, Text, FAB, useTheme, AnimatedFAB } from 'react-native-paper';
+import { TextInput, Appbar, Avatar, Card, Text, FAB, ActivityIndicator } from 'react-native-paper';
 import * as SecureStore from 'expo-secure-store';
 import { getCategories } from '../../utils/homeServices';
 import { router, useFocusEffect } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/hooks/themeContext'; 
+
 
 const { width } = Dimensions.get('window');
 const CARD_PADDING = 16;
@@ -20,9 +21,10 @@ const Home = () => {
   const [sortAsc, setSortAsc] = useState(true);
   const [isGridView, setIsGridView] = useState(true);
   const [showSearch, setShowSearch] = useState(false);
-  const [isExtended, setIsExtended] = React.useState(true);
+  const [isExtended, setIsExtended] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // <-- Add loading stat
   const searchAnim = useRef(new Animated.Value(width - 32)).current;
-
+  
   const toggleSearch = () => {
     Animated.timing(searchAnim, {
       toValue: searchTerm ? width - 32 : width * 0.5,
@@ -49,6 +51,8 @@ const Home = () => {
         setCategories(data);
       } catch (err) {
         console.log('Error fetching categories', err);
+      } finally {
+        setIsLoading(false); // <-- Always set loading to false after request
       }
     };
 
@@ -99,29 +103,28 @@ const Home = () => {
     </Card>
   );  
 
-
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <StatusBar 
-          barStyle={isDark ? 'light-content' : 'dark-content'} 
-          backgroundColor={theme.colors.background} 
+        barStyle={isDark ? 'light-content' : 'dark-content'} 
+        backgroundColor={theme.colors.background} 
       />
 
-  
-      <Appbar.Header style={{ backgroundColor: theme.colors.background, elevation: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, }}>
+      <Appbar.Header style={{ backgroundColor: theme.colors.background, elevation: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        
-          {user?.profilePic && (
-            <TouchableOpacity onPress={() => router.push('/profile')}>
-              <Avatar.Image
-                size={40}  
-                source={{ uri: user.profilePic }}
-                style={{ marginLeft: 12 }}
-              />
-            </TouchableOpacity>
-          )}
+        <TouchableOpacity onPress={() => router.push('/profile')}>
+          <Avatar.Image
+            size={40}
+            source={
+              user?.profilePic
+                ? { uri: user.profilePic }
+                : require('@/assets/images/profile.png')
+            }
+            style={{ marginLeft: 12 }}
+          />
+        </TouchableOpacity>
 
-       
+
           {user?.firstName && user?.lastName && (
             <Text
               style={{
@@ -136,14 +139,12 @@ const Home = () => {
           )}
         </View>
 
-       
         <Appbar.Action
           icon={isDark ? 'white-balance-sunny' : 'weather-night'}
           onPress={toggleTheme}
         />
       </Appbar.Header>
 
-    
       <View style={{ paddingHorizontal: CARD_PADDING }}>
         <Animated.View style={{ width: searchAnim }}>
           <TextInput
@@ -155,7 +156,7 @@ const Home = () => {
               toggleSearch();
             }}
             left={<TextInput.Icon icon="magnify" size={20}/>}
-            style={{ marginBottom: 16, height: 45}}
+            style={{ marginBottom: 16, height: 45 }}
             theme={{
               roundness: 6,
               colors: {
@@ -204,18 +205,24 @@ const Home = () => {
         </View>
       </View>
 
-   
-      <FlatList
-        contentContainerStyle={{
-          paddingHorizontal: CARD_PADDING,
-          paddingBottom: 100,
-        }}
-        data={filteredSorted}
-        renderItem={renderItem}
-        keyExtractor={(item) => item._id}
-        numColumns={isGridView ? GRID_COLUMNS : 1}
-        key={isGridView ? 'grid' : 'list'} 
-      />
+      {/* If loading, show loader */}
+      {isLoading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator animating={true} size="large" color={theme.colors.primary} />
+        </View>
+      ) : (
+        <FlatList
+          contentContainerStyle={{
+            paddingHorizontal: CARD_PADDING,
+            paddingBottom: 100,
+          }}
+          data={filteredSorted}
+          renderItem={renderItem}
+          keyExtractor={(item) => item._id}
+          numColumns={isGridView ? GRID_COLUMNS : 1}
+          key={isGridView ? 'grid' : 'list'} 
+        />
+      )}
 
       <FAB
         icon="plus"
