@@ -24,7 +24,7 @@ const Home = () => {
   const [isExtended, setIsExtended] = useState(true);
   const [isLoading, setIsLoading] = useState(true); // <-- Add loading stat
   const searchAnim = useRef(new Animated.Value(width - 32)).current;
-  
+ 
   const toggleSearch = () => {
     Animated.timing(searchAnim, {
       toValue: searchTerm ? width - 32 : width * 0.5,

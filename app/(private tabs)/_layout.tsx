@@ -5,6 +5,7 @@ export default function RootLayout() {
     <Stack>
       <Stack.Screen name="Settings" options={{headerShown: false}}/>
       <Stack.Screen name="Change Password" options={{headerShown: false}}/>
+      <Stack.Screen name="Profile Settings" options={{headerShown: false}}/>
     </Stack>
   );
 }

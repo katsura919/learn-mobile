@@ -26,6 +26,9 @@ export default function SettingsScreen() {
     router.push("/Change Password");
   };
 
+  const handleProfileSettings = () => {
+    router.push("/Profile Settings");
+  };
   return (
     <View style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
       {/* Header */}
@@ -39,7 +42,7 @@ export default function SettingsScreen() {
        <List.Item
           title="Profile"
           left={() => <Ionicons name="person-outline" size={24} color={paperTheme.colors.onSurface} />}
-          onPress={handleChangePassword}
+          onPress={handleProfileSettings}
           style={[styles.option, { backgroundColor: paperTheme.colors.surface,  }]}
           titleStyle={{ color: paperTheme.colors.onSurface, fontFamily: 'Inter-Regular', fontSize: 13, }}
         />
