@@ -3,7 +3,7 @@ import { SafeAreaView, ScrollView, Alert } from "react-native";
 import { Text, TextInput, Button, HelperText } from "react-native-paper";
 import { useRouter } from "expo-router";
 import * as lessonService from "@/utils/createLessonServices";
-import { useAppTheme } from "@/hooks/themeContext"; // Import useAppTheme
+import { useAppTheme } from "@/hooks/themeContext"; 
 import AppHeader from "@/components/create/create-header";
 import CategoryModal from "@/components/create/create-category-modal";
 
@@ -72,7 +72,7 @@ export default function CreateLessonScreen() {
             mode="outlined"
             style={{ marginBottom: 20 }}
             theme={{ roundness: 1}}
-            onPress={() => setModalVisible(true)} // Open category modal
+            onPress={() => setModalVisible(true)} 
             icon="folder-plus"
             buttonColor={theme.colors.surface}
           >
@@ -124,15 +124,15 @@ export default function CreateLessonScreen() {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onSubmit={() => {
-          setCategoryName(newCategory); // Set the selected category
-          setModalVisible(false); // Close the modal
+          setCategoryName(newCategory); 
+          setModalVisible(false); 
         }}
         value={newCategory}
         onChangeText={setNewCategory}
-        categories={categories} // Pass categories to the modal
+        categories={categories} 
         onCategorySelect={(selectedCategory: any) => {
-          setCategoryName(selectedCategory); // Set the selected category
-          setModalVisible(false); // Close the modal
+          setCategoryName(selectedCategory); 
+          setModalVisible(false); 
         }}
       />
     </SafeAreaView>

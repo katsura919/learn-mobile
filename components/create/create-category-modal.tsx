@@ -41,7 +41,7 @@ export default function CategoryModal({
         ]}
       >
         <View style={[styles.modalCard, { backgroundColor: theme.colors.surface }]}>
-          {/* Close Button (Top-Right) */}
+
           <IconButton
             icon="close"
             size={20}
@@ -57,7 +57,7 @@ export default function CategoryModal({
             Choose or create a new one
           </Text>
 
-          {/* Scrollable List with Visual Cues */}
+       
           <View style={styles.listContainer}>
             <FlatList
               data={categories}
@@ -73,19 +73,15 @@ export default function CategoryModal({
               )}
               keyExtractor={(item) => item._id}
               style={styles.categoryList}
-              // Scroll Indicators
               showsVerticalScrollIndicator={true}
               indicatorStyle={theme.dark ? "white" : "black"}
-              // Fading Edge (Android)
               fadingEdgeLength={20}
-              // Scrollbar Always Visible (iOS)
               persistentScrollbar={true}
             />
-            {/* Gradient Overlay (Visual Scroll Hint) */}
             <View style={styles.scrollHintBottom} />
           </View>
 
-          {/* New Category Input */}
+
           <TextInput
             mode="outlined"
             label="New Category"
@@ -95,7 +91,7 @@ export default function CategoryModal({
             outlineStyle={styles.inputOutline}
           />
 
-          {/* Create Button */}
+
           <Button
             mode="contained"
             onPress={onSubmit}

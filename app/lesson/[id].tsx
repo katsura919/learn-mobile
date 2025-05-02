@@ -13,11 +13,11 @@ import {
   ActivityIndicator,
   useTheme,
 } from "react-native-paper";
-import { useAppTheme } from "@/hooks/themeContext"; // <- import your custom hook
+import { useAppTheme } from "@/hooks/themeContext";
 
 export default function LessonScreen() {
   const { id } = useLocalSearchParams();
-  const { theme } = useAppTheme(); // <- get your custom theme
+  const { theme } = useAppTheme(); 
   const [lesson, setLesson] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);

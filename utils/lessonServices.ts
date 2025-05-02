@@ -15,11 +15,10 @@ export const getUserLessons = async () => {
 export const fetchLessonsByCategory = async (categoryId: string) => {
   try {
     const res = await api.get(`/lessons/category/${categoryId}`);
-    // Return the data array from the response object
-    return res.data.data || []; // Return the nested array or empty array if undefined
+    return res.data.data || []; 
   } catch (err) {
     console.error('Error fetching lessons by category:', err);
-    return []; // Return empty array on error
+    return []; 
   }
 };
 

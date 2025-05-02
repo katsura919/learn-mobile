@@ -38,7 +38,7 @@ const RenameModal = ({ visible, onClose, onSubmit }: RenameModalProps) => {
               backgroundColor: colors.elevation.level1,
               borderRadius: 4,
               marginBottom: 10,
-              width: "100%",  // Ensure it takes the full width
+              width: "100%", 
             }}
             underlineColor="transparent"
             placeholderTextColor={colors.onSurfaceVariant}
@@ -54,7 +54,7 @@ const RenameModal = ({ visible, onClose, onSubmit }: RenameModalProps) => {
             style={[
               styles.button,
               {
-                backgroundColor: "#D32F2F", // Red background for cancel button
+                backgroundColor: "#D32F2F", 
               },
             ]}
             contentStyle={styles.buttonContent}

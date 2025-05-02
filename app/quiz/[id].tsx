@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Animated, Easing } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { getQuestionsByLesson } from '../../utils/quizService';
+import { getQuestionsByLesson, saveQuizAttempt} from '../../utils/quizService';
 import { Feather } from '@expo/vector-icons';
 
 const QuizScreen = () => {
@@ -21,7 +21,7 @@ const QuizScreen = () => {
       loadQuestions();
     }
   }, [lessonId]);
-
+  
   const loadQuestions = async () => {
     try {
       const data = await getQuestionsByLesson(lessonId as string);

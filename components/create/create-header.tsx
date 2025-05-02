@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Appbar } from 'react-native-paper';
 import { useRouter } from 'expo-router';
-import { useAppTheme } from '@/hooks/themeContext'; // use theme context
+import { useAppTheme } from '@/hooks/themeContext'; 
 
 type AppHeaderProps = {
   title: string;
@@ -11,7 +11,7 @@ type AppHeaderProps = {
 
 const AppHeader: React.FC<AppHeaderProps> = ({ title, onSave }) => {
   const router = useRouter();
-  const { theme } = useAppTheme(); // get current theme
+  const { theme } = useAppTheme(); 
 
   return (
     <Appbar.Header style={[styles.header, { backgroundColor: theme.colors.surface }]}>

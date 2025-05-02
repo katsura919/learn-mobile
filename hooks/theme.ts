@@ -1,4 +1,3 @@
-// theme.ts
 import {
   MD3LightTheme as PaperLightTheme,
   MD3DarkTheme as PaperDarkTheme,

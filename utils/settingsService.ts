@@ -26,10 +26,9 @@ type User = {
 type UploadProfilePicResponse = {
   success: boolean;
   data: User;
-  message?: string; // Add message to response type
+  message?: string; 
 };
 
-// In your api.ts (simplified version)
 export const uploadProfilePic = async (userId: string, image: any) => {
   try {
     const uri = image.uri;

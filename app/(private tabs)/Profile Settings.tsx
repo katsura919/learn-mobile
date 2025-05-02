@@ -6,7 +6,6 @@ import { getUserProfile, updateUserProfile, uploadProfilePic } from '@/utils/set
 import * as SecureStore from 'expo-secure-store';
 import { useFocusEffect } from '@react-navigation/native';
 
-// Define user type for better TypeScript support
 type User = {
   id: string;
   firstName: string;

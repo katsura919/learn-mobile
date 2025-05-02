@@ -1,4 +1,3 @@
-// services/categoryService.ts
 import API from './api';
 
 export const updateCategory = async (id: string, name: string) => {

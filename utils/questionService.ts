@@ -1,4 +1,4 @@
-import api from './api'; // your configured Axios instance
+import api from './api'; 
 
 export const generateQuestions = async (lessonId: string) => {
     try {

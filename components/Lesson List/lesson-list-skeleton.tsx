@@ -4,7 +4,7 @@ import { View, Text, Animated, StyleSheet, Dimensions } from 'react-native';
 const screenWidth = Dimensions.get("window").width;
 
 const SkeletonCard = ({ isGrid }: { isGrid: boolean }) => {
-  const fadeAnim = new Animated.Value(0); // Initial value for opacity
+  const fadeAnim = new Animated.Value(0); 
 
   // Fade in animation
   React.useEffect(() => {

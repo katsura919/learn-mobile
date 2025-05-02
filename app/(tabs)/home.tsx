@@ -22,7 +22,7 @@ const Home = () => {
   const [isGridView, setIsGridView] = useState(true);
   const [showSearch, setShowSearch] = useState(false);
   const [isExtended, setIsExtended] = useState(true);
-  const [isLoading, setIsLoading] = useState(true); // <-- Add loading stat
+  const [isLoading, setIsLoading] = useState(true); 
   const searchAnim = useRef(new Animated.Value(width - 32)).current;
  
   const toggleSearch = () => {
@@ -205,7 +205,6 @@ const Home = () => {
         </View>
       </View>
 
-      {/* If loading, show loader */}
       {isLoading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator animating={true} size="large" color={theme.colors.primary} />
