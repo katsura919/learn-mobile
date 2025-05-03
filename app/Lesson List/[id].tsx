@@ -167,26 +167,38 @@ export default function LessonList() {
                   flexDirection: isGrid ? "row" : "column",
                   flexWrap: "wrap",
                   justifyContent: isGrid ? "space-between" : "flex-start",
+                  paddingHorizontal: 2,
+                  paddingBottom: 80,
                 }}
               >
-                {filteredLessons.map((item) => (
+                {filteredLessons.map((item, index) => (
                   <Card
                     key={item._id}
                     mode="elevated"
                     style={{
                       backgroundColor: colors.surface,
+                      borderRadius: 10,
                       marginBottom: 16,
-                      borderRadius: 20,
-                      width: isGrid ? (screenWidth - 60) / 2 : "100%",
-                      elevation: 2,
-                      marginRight: isGrid ? 8 : 0,
+                      paddingHorizontal: 4,
+                      paddingVertical: 2,
+                      width: isGrid ? (screenWidth - 48) / 2 : "100%", // adjust width in grid
+                      marginRight: isGrid && index % 2 === 0 ? 12 : 0, // add right margin to first column
+                      elevation: 1,
                     }}
                     onPress={() => router.push(`/Lesson/${item._id}`)}
                   >
                     <Card.Content>
-                      <Text variant="titleMedium" style={{ color: colors.onSurface, marginBottom: 6 }}>
+                      <Text
+                        variant="titleMedium"
+                        style={{
+                          color: colors.onSurface,
+                          marginBottom: 6,
+                          fontWeight: "600",
+                        }}
+                      >
                         {item.title}
                       </Text>
+
                       <Text
                         variant="bodySmall"
                         style={{ color: colors.onSurface }}
@@ -194,6 +206,7 @@ export default function LessonList() {
                       >
                         {item.content}
                       </Text>
+
                       <Text
                         style={{
                           marginTop: 12,
@@ -207,6 +220,7 @@ export default function LessonList() {
                   </Card>
                 ))}
               </View>
+
             </ScrollView>
           ) : loading ? (
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>

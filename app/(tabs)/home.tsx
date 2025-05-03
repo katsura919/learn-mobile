@@ -10,7 +10,7 @@ import { useAppTheme } from '@/hooks/themeContext';
 
 const { width } = Dimensions.get('window');
 const CARD_PADDING = 16;
-const SPACING = 12;
+const SPACING = 20;
 const GRID_COLUMNS = 2;
 
 const Home = () => {
@@ -24,7 +24,7 @@ const Home = () => {
   const [isExtended, setIsExtended] = useState(true);
   const [isLoading, setIsLoading] = useState(true); 
   const searchAnim = useRef(new Animated.Value(width - 32)).current;
- 
+
   const toggleSearch = () => {
     Animated.timing(searchAnim, {
       toValue: searchTerm ? width - 32 : width * 0.5,
@@ -64,8 +64,8 @@ const Home = () => {
       onPress={() => router.push(`/Lesson List/${item._id}?name=${item.name}`)}
       style={{
         flex: 1,
-        margin: SPACING / 2,
-        borderRadius: 16,
+        margin: SPACING / 4,
+        borderRadius: 8,
         elevation: 3,
         backgroundColor: theme.colors.surface,
       }}
@@ -79,29 +79,46 @@ const Home = () => {
           paddingHorizontal: 8,
         }}
       >
-        <Avatar.Icon
-          icon="folder-open"
+        <MaterialIcons
+          name="folder-open"
           size={isGridView ? 56 : 48}
+          color={theme.colors.primary}
           style={{
             marginBottom: isGridView ? 10 : 0,
             marginRight: isGridView ? 0 : 12,
-            backgroundColor: theme.colors.primary,
           }}
-          color={theme.colors.onPrimary}
         />
-        <Text
-          variant="titleSmall"
-          style={{
-            textAlign: isGridView ? 'center' : 'left',
-            fontFamily: 'Inter-Regular',
-            color: theme.colors.onSurface,
-          }}
-        >
-          {item.name}
-        </Text>
+        <View style={{ flex: 1 }}>
+          <Text
+            variant="titleSmall"
+            style={{
+              textAlign: isGridView ? 'center' : 'left',
+              fontFamily: 'Inter-Regular',
+              color: theme.colors.onSurface,
+            }}
+          >
+            {item.name}
+          </Text>
+          <Text
+            variant="bodySmall"
+            style={{
+              textAlign: isGridView ? 'center' : 'left',
+              fontFamily: 'Inter-Regular',
+              color: theme.colors.onSurfaceVariant,
+              marginTop: 4,
+            }}
+          >
+            {new Date(item.createdAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </Text>
+        </View>
       </Card.Content>
     </Card>
-  );  
+  );
+  
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
@@ -206,21 +223,36 @@ const Home = () => {
       </View>
 
       {isLoading ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center'}}>
           <ActivityIndicator animating={true} size="large" color={theme.colors.primary} />
         </View>
       ) : (
-        <FlatList
-          contentContainerStyle={{
-            paddingHorizontal: CARD_PADDING,
-            paddingBottom: 100,
-          }}
-          data={filteredSorted}
-          renderItem={renderItem}
-          keyExtractor={(item) => item._id}
-          numColumns={isGridView ? GRID_COLUMNS : 1}
-          key={isGridView ? 'grid' : 'list'} 
-        />
+        <View style={{ flex: 1, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 10 }}>
+
+          <Text
+            style={{
+              fontSize: 19,
+              fontFamily: 'Inter-Medium',
+              color: theme.colors.onBackground,
+              marginBottom: 13,
+              paddingHorizontal: CARD_PADDING,
+              textAlign: 'center'
+            }}
+          >Notebooks
+          </Text>
+          <FlatList
+            contentContainerStyle={{
+              paddingHorizontal: CARD_PADDING,
+              paddingBottom: 100,
+            }}
+            data={filteredSorted}
+            renderItem={renderItem}
+            keyExtractor={(item) => item._id}
+            numColumns={isGridView ? GRID_COLUMNS : 1}
+            key={isGridView ? 'grid' : 'list'} 
+          
+          />
+        </View>
       )}
 
       <FAB
