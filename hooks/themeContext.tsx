@@ -28,7 +28,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     loadTheme();
   }, []);
 
-  if (loading) return null; // Or splash screen
+  if (loading) return null; 
 
   return (
     <ThemeContext.Provider value={{ theme, isDark, toggleTheme }}>
