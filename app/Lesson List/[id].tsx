@@ -8,6 +8,7 @@ import { deleteCategory, updateCategory } from "@/utils/categoryService";
 import LessonListHeader from "../../components/Lesson List/lesson-list-header";
 import { useAppTheme } from "@/hooks/themeContext";
 import { MaterialIcons } from '@expo/vector-icons';
+import socket, { connectSocket } from "@/utils/socket";
 const screenWidth = Dimensions.get("window").width;
 
 export default function LessonList() {
@@ -25,6 +26,9 @@ export default function LessonList() {
 
   const openMenu = () => setMenuVisible(true);
   const closeMenu = () => setMenuVisible(false);
+
+
+
 
   useFocusEffect(
     useCallback(() => {

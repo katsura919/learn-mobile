@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, StatusBar, TouchableOpacity, FlatList, Dimensions, Animated } from 'react-native';
 import { TextInput, Appbar, Avatar, Card, Text, FAB, ActivityIndicator } from 'react-native-paper';
 import * as SecureStore from 'expo-secure-store';
@@ -6,7 +6,7 @@ import { getCategories } from '../../utils/homeServices';
 import { router, useFocusEffect } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/hooks/themeContext'; 
-
+import socket, { connectSocket } from '@/utils/socket';
 
 const { width } = Dimensions.get('window');
 const CARD_PADDING = 16;
@@ -24,6 +24,23 @@ const Home = () => {
   const [isExtended, setIsExtended] = useState(true);
   const [isLoading, setIsLoading] = useState(true); 
   const searchAnim = useRef(new Animated.Value(width - 32)).current;
+
+  useEffect(() => {
+  const initializeSocket = async () => {
+    await connectSocket();
+
+    socket.on("categoryCreated", (newCategory) => {
+      console.log("New category received via socket:", newCategory);
+      setCategories((prev) => [newCategory, ...prev]);
+    });
+  };
+
+  initializeSocket();
+
+  return () => {
+    socket.off("category_created"); // clean up on unmount
+  };
+}, []);
 
   const toggleSearch = () => {
     Animated.timing(searchAnim, {
