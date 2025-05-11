@@ -15,7 +15,9 @@ export default function AttemptGraph() {
         const userData = await SecureStore.getItemAsync("userData");
         if (userData) {
           const { id } = JSON.parse(userData);
-          const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/attempts/allattempts/${id}`);
+          const response = await fetch(
+            `${process.env.EXPO_PUBLIC_API_URL}/attempts/allattempts/${id}`
+          );
           const data = await response.json();
           setAttempts(data.attempts || []);
         }
@@ -34,23 +36,35 @@ export default function AttemptGraph() {
   if (attempts.length === 0) {
     return (
       <View style={{ marginTop: 20 }}>
-        <Text style={{ color: theme.colors.onBackground, textAlign: "center" }}>No attempts yet.</Text>
+        <Text style={{ color: theme.colors.onBackground, textAlign: "center" }}>
+          No attempts yet.
+        </Text>
       </View>
     );
   }
 
-  // Transform data for the chart
+  
   const chartData = attempts.map((attempt, index) => ({
-    value: attempt.score,
-    label: `#${index + 1}`,
-    labelTextStyle: { color: theme.colors.onBackground, fontSize: 10 },
+    value: Math.min(Math.round(attempt.score), 100), 
+    label: `${index + 1}`,
+    labelTextStyle: {
+      color: theme.colors.onBackground,
+      fontSize: 10,
+    },
     frontColor: theme.colors.primary,
   }));
 
   return (
     <View style={{ marginTop: 24, paddingHorizontal: 16 }}>
-      <Text style={{ color: theme.colors.onBackground, fontSize: 16, marginBottom: 8 }}>
-        Quiz Score Progress
+      <Text
+        style={{
+          color: theme.colors.onBackground,
+          fontSize: 16,
+          fontFamily: "Inter-Medium",
+          marginBottom: 8,
+        }}
+      >
+        Quiz History
       </Text>
       <LineChart
         data={chartData}
@@ -65,11 +79,12 @@ export default function AttemptGraph() {
         hideRules
         yAxisColor="transparent"
         xAxisColor="transparent"
-        noOfSections={4}
+        noOfSections={5}
         animateOnDataChange
         animationDuration={800}
         isAnimated
-        maxValue={100}
+        maxValue={100} 
+        yAxisTextStyle={{ color: theme.colors.onBackground, fontSize: 10 }}
       />
     </View>
   );

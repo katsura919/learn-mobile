@@ -215,17 +215,7 @@ const Home = () => {
       ) : (
         <View style={{ flex: 1, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 10 }}>
 
-          <Text
-            style={{
-              fontSize: 19,
-              fontFamily: 'Inter-Medium',
-              color: theme.colors.onBackground,
-              marginBottom: 13,
-              paddingHorizontal: CARD_PADDING,
-              textAlign: 'center'
-            }}
-          >Notebooks
-          </Text>
+
           <FlatList
             contentContainerStyle={{
               paddingHorizontal: CARD_PADDING,

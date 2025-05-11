@@ -140,30 +140,35 @@ export default function QuizScreen() {
   }, [quizCompleted]);
 
   const submitAttempt = async () => {
-    try {
-      setSaving(true);
-      const userData = await SecureStore.getItemAsync('userData');
-      const parsedUser = userData ? JSON.parse(userData) : null;
+  try {
+    setSaving(true);
+    const userData = await SecureStore.getItemAsync('userData');
+    const parsedUser = userData ? JSON.parse(userData) : null;
 
-      if (!parsedUser) throw new Error('User not found');
+    if (!parsedUser) throw new Error('User not found');
 
-      const attemptData = {
-        userId: parsedUser.id,
-        lessonId,
-        score,
-        totalItems: questions.length,
-        correctAnswers: score,
-      };
+    const correct = score;
+    const total = questions.length;
+    const percentage = (correct / total) * 100;
 
-      await axios.post('http://10.0.2.2:5000/api/attempts', attemptData);
+    const attemptData = {
+      userId: parsedUser.id,
+      lessonId,
+      score: percentage, // score as percentage
+      totalItems: total,
+      correctAnswers: correct,
+    };
 
-      console.log('Attempt submitted');
-    } catch (err) {
-      console.error('Error submitting attempt:', err);
-    } finally {
-      setSaving(false);
-    }
-  };
+    await axios.post('http://10.0.2.2:5000/api/attempts', attemptData);
+
+    console.log('Attempt submitted');
+  } catch (err) {
+    console.error('Error submitting attempt:', err);
+  } finally {
+    setSaving(false);
+  }
+};
+
 
   if (!started) {
     return (
