@@ -18,6 +18,7 @@ export default function ChangePasswordScreen() {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [errors, setErrors] = useState({
     currentPassword: "",
@@ -43,37 +44,41 @@ export default function ChangePasswordScreen() {
   }, []);
 
   const handleChangePassword = async () => {
-    const newErrors = { currentPassword: "", newPassword: "", confirmNewPassword: "" };
+  const newErrors = { currentPassword: "", newPassword: "", confirmNewPassword: "" };
 
-    if (!currentPassword) newErrors.currentPassword = "Current password is required.";
-    if (newPassword.length < 8) newErrors.newPassword = "New password must be at least 8 characters.";
-    if (newPassword !== confirmNewPassword) newErrors.confirmNewPassword = "Passwords do not match.";
+  if (!currentPassword) newErrors.currentPassword = "Current password is required.";
+  if (newPassword.length < 8) newErrors.newPassword = "New password must be at least 8 characters.";
+  if (newPassword !== confirmNewPassword) newErrors.confirmNewPassword = "Passwords do not match.";
 
-    setErrors(newErrors);
-    const hasErrors = Object.values(newErrors).some((msg) => msg !== "");
-    if (hasErrors) return;
+  setErrors(newErrors);
+  const hasErrors = Object.values(newErrors).some((msg) => msg !== "");
+  if (hasErrors) return;
 
-    try {
-      const res = await changePassword({ userId, currentPassword, newPassword });
+  setLoading(true); // Start spinner
+  try {
+    const res = await changePassword({ userId, currentPassword, newPassword });
 
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmNewPassword("");
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmNewPassword("");
 
-      setSnackbar({
-        visible: true,
-        message: res.message || "Password changed successfully",
-        isError: false,
-      });
-    } catch (res: any) {
-      const msg = res.message || "Something went wrong";
-      setSnackbar({
-        visible: true,
-        message: msg,
-        isError: true,
-      });
-    }
+    setSnackbar({
+      visible: true,
+      message: res.message || "Password changed successfully",
+      isError: false,
+    });
+  } catch (res: any) {
+    const msg = res.message || "Something went wrong";
+    setSnackbar({
+      visible: true,
+      message: msg,
+      isError: true,
+    });
+  } finally {
+    setLoading(false); // Stop spinner
+  }
   };
+
 
   return (
     <>
@@ -152,9 +157,12 @@ export default function ChangePasswordScreen() {
           onPress={handleChangePassword}
           style={styles.button}
           contentStyle={{ paddingVertical: 10 }}
+          loading={loading}
+          disabled={loading}
         >
           Change Password
         </Button>
+
       </ScrollView>
 
       <Snackbar

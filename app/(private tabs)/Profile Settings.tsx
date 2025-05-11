@@ -189,7 +189,7 @@ const SettingsScreen = () => {
           keyboardType="email-address"
           autoCapitalize="none"
           disabled={updating}
-        />
+        /> 
 
         <Button
           mode="contained"
@@ -230,6 +230,7 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 10,
   },
+
   snackbar: {
     position: 'absolute',
     bottom: 0,
