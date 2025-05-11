@@ -2,7 +2,7 @@
 import { io } from "socket.io-client";
 import * as SecureStore from "expo-secure-store";
 
-const apiUrl = "http://10.0.2.2:5000";
+const apiUrl = "https://learn-server-sroc.onrender.com";
 const socket = io(apiUrl, {
   transports: ["websocket"],
   autoConnect: false,

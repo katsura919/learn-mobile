@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
-import { Appbar, Card, Text, useTheme, Avatar } from "react-native-paper";
+import { Appbar, Card, Text, useTheme, Avatar, ActivityIndicator } from "react-native-paper";
 import * as SecureStore from "expo-secure-store";
 import { fetchHomeStats } from "../../utils/profileServices";
 import { useAppTheme } from "@/hooks/themeContext";
@@ -41,7 +41,13 @@ export default function ProfileScreen() {
     fetchData();
   }, []);
 
-  if (!user) return null;
+ if (!user) {
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: theme.colors.background }}>
+      <ActivityIndicator animating={true} size="large" color={theme.colors.primary} />
+    </View>
+  );
+}
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
