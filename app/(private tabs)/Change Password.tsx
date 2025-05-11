@@ -77,9 +77,16 @@ export default function ChangePasswordScreen() {
 
   return (
     <>
-      <Appbar.Header elevated theme={{ colors: { primary: theme.colors.background } }}>
+      <Appbar.Header mode="small" style={{ backgroundColor: theme.colors.background }}>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
-        <Appbar.Content title="Change Password" />
+        <Appbar.Content 
+          title="Change Password" 
+          titleStyle={{
+            color: theme.colors.onBackground,
+            fontFamily: "Inter-Medium",
+            fontSize: 16,
+          }}
+        />
       </Appbar.Header>
 
       <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>

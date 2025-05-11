@@ -1,10 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, TouchableOpacity, Alert } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { TextInput, Button, Avatar, Text, ActivityIndicator } from 'react-native-paper';
+import {
+  TextInput,
+  Button,
+  Avatar,
+  Text,
+  ActivityIndicator,
+  Snackbar,
+  Appbar,
+  useTheme,
+} from 'react-native-paper';
 import { getUserProfile, updateUserProfile, uploadProfilePic } from '@/utils/settingsService';
 import * as SecureStore from 'expo-secure-store';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 type User = {
   id: string;
@@ -16,11 +25,22 @@ type User = {
 };
 
 const SettingsScreen = () => {
+  const theme = useTheme();
+  const navigation = useNavigation();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [selectedImage, setSelectedImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarError, setSnackbarError] = useState(false);
+
+  const showSnackbar = (message: string, isError = false) => {
+    setSnackbarMessage(message);
+    setSnackbarError(isError);
+    setSnackbarVisible(true);
+  };
 
   const fetchProfile = async () => {
     try {
@@ -30,8 +50,8 @@ const SettingsScreen = () => {
       const profile = await getUserProfile(id);
       setUser(profile);
     } catch (error) {
-      Alert.alert('Error', 'Failed to load profile');
       console.error('Profile fetch error:', error);
+      showSnackbar('Failed to load profile', true);
     } finally {
       setLoading(false);
     }
@@ -40,7 +60,7 @@ const SettingsScreen = () => {
   const pickImage = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: [ 'images'],
+        mediaTypes: [ 'images' ],
         allowsEditing: true,
         aspect: [4, 3],
         quality: 1,
@@ -51,7 +71,7 @@ const SettingsScreen = () => {
       }
     } catch (error) {
       console.error('Image picker error:', error);
-      Alert.alert('Error', 'Failed to pick image');
+      showSnackbar('Failed to pick image', true);
     }
   };
 
@@ -68,18 +88,21 @@ const SettingsScreen = () => {
           setSelectedImage(null);
         } catch (error: any) {
           console.log('[SAVE ERROR] Image upload failed:', error.message);
-          Alert.alert('Error', 'Failed to upload image');
+          showSnackbar('Failed to upload image', true);
           return;
         }
       }
 
       if (hasChanges && user) {
         await updateUserProfile(id, user);
-        Alert.alert('Success', 'Profile updated');
+        setHasChanges(false);
+        showSnackbar('Profile updated successfully', false);
+      } else if (!selectedImage) {
+        showSnackbar('No changes to update');
       }
     } catch (error: any) {
       console.log('[SAVE ERROR]', error.message);
-      Alert.alert('Error', 'Failed to save');
+      showSnackbar('Failed to save changes', true);
     } finally {
       setUpdating(false);
     }
@@ -103,68 +126,116 @@ const SettingsScreen = () => {
   if (!user) return <Text>Unable to load user data</Text>;
 
   return (
-    <View style={{ padding: 20 }}>
-      <TouchableOpacity
-        onPress={pickImage}
-        style={{ alignItems: 'center', marginBottom: 20 }}
-        disabled={updating}
-      >
-        {selectedImage ? (
-          <Image
-            source={{ uri: selectedImage.uri }}
-            style={{ width: 100, height: 100, borderRadius: 50 }}
+    <>
+      <Appbar.Header mode="small" style={{ backgroundColor: theme.colors.background }}>
+        <Appbar.BackAction onPress={() => navigation.goBack()} />
+        <Appbar.Content 
+          title="Profile"
+          titleStyle={{
+            color: theme.colors.onBackground,
+            fontFamily: "Inter-Medium",
+            fontSize: 16,
+          }}
           />
-        ) : user.profilePic ? (
-          <Avatar.Image size={100} source={{ uri: user.profilePic }} />
-        ) : (
-          <Avatar.Icon size={100} icon="account" />
-        )}
-        <Text style={{ marginTop: 10 }}>
-          {updating ? 'Uploading...' : 'Tap to change profile picture'}
-        </Text>
-      </TouchableOpacity>
+      </Appbar.Header>
 
-      <TextInput
-        label="First Name"
-        value={user.firstName}
-        onChangeText={(text) => handleFieldChange('firstName', text)}
-        style={{ marginBottom: 10 }}
-        disabled={updating}
-      />
-      <TextInput
-        label="Last Name"
-        value={user.lastName}
-        onChangeText={(text) => handleFieldChange('lastName', text)}
-        style={{ marginBottom: 10 }}
-        disabled={updating}
-      />
-      <TextInput
-        label="Username"
-        value={user.username}
-        onChangeText={(text) => handleFieldChange('username', text)}
-        style={{ marginBottom: 10 }}
-        disabled={updating}
-      />
-      <TextInput
-        label="Email"
-        value={user.email}
-        onChangeText={(text) => handleFieldChange('email', text)}
-        style={{ marginBottom: 20 }}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        disabled={updating}
-      />
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <TouchableOpacity
+          onPress={pickImage}
+          style={styles.imageContainer}
+          disabled={updating}
+        >
+          {selectedImage ? (
+            <Image
+              source={{ uri: selectedImage.uri }}
+              style={styles.profileImage}
+            />
+          ) : user.profilePic ? (
+            <Avatar.Image size={100} source={{ uri: user.profilePic }} />
+          ) : (
+            <Avatar.Icon size={100} icon="account" />
+          )}
+          <Text style={{ marginTop: 10 }}>
+            {updating ? 'Uploading...' : 'Tap to change profile picture'}
+          </Text>
+        </TouchableOpacity>
 
-      <Button
-        mode="contained"
-        loading={updating}
-        onPress={handleSave}
-        disabled={!hasChanges && !selectedImage || updating}
+        <TextInput
+          label="First Name"
+          value={user.firstName}
+          onChangeText={(text) => handleFieldChange('firstName', text)}
+          style={styles.input}
+          disabled={updating}
+        />
+        <TextInput
+          label="Last Name"
+          value={user.lastName}
+          onChangeText={(text) => handleFieldChange('lastName', text)}
+          style={styles.input}
+          disabled={updating}
+        />
+        <TextInput
+          label="Username"
+          value={user.username}
+          onChangeText={(text) => handleFieldChange('username', text)}
+          style={styles.input}
+          disabled={updating}
+        />
+        <TextInput
+          label="Email"
+          value={user.email}
+          onChangeText={(text) => handleFieldChange('email', text)}
+          style={styles.input}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          disabled={updating}
+        />
+
+        <Button
+          mode="contained"
+          loading={updating}
+          onPress={handleSave}
+          disabled={!hasChanges && !selectedImage || updating}
+        >
+          {updating ? 'Saving...' : 'Save Changes'}
+        </Button>
+      </View>
+
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+        style={{ backgroundColor: snackbarError ? theme.colors.error : theme.colors.primary }}
       >
-        {updating ? 'Saving...' : 'Save Changes'}
-      </Button>
-    </View>
+        {snackbarMessage}
+      </Snackbar>
+    </>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+    flex: 1,
+  },
+  imageContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  input: {
+    marginBottom: 10,
+  },
+  snackbar: {
+    position: 'absolute',
+    bottom: 0,
+    width: Dimensions.get('window').width,
+    borderRadius: 0,
+  },
+});
 
 export default SettingsScreen;
