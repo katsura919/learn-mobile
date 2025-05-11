@@ -2,12 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import { View, StyleSheet, Animated, Easing, KeyboardAvoidingView } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { getQuestionsByLesson } from '../../utils/quizService';
-import { Text, Button, ActivityIndicator, TextInput, Provider as PaperProvider } from 'react-native-paper';
+import { Text, Button, ActivityIndicator, TextInput } from 'react-native-paper';
 import { useAppTheme } from '@/hooks/themeContext';
+import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
 
 export default function QuizScreen() {
   const { id: lessonId } = useLocalSearchParams();
-  const { theme } = useAppTheme(); 
+  const { theme } = useAppTheme();
 
   const [questions, setQuestions] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -17,6 +19,7 @@ export default function QuizScreen() {
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [timerDuration, setTimerDuration] = useState('10');
   const [started, setStarted] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const progressAnim = useRef(new Animated.Value(0)).current;
@@ -129,6 +132,39 @@ export default function QuizScreen() {
     outputRange: [0, 1],
   });
 
+  // 🔥 Submit attempt once quiz is completed
+  useEffect(() => {
+    if (quizCompleted && !saving) {
+      submitAttempt();
+    }
+  }, [quizCompleted]);
+
+  const submitAttempt = async () => {
+    try {
+      setSaving(true);
+      const userData = await SecureStore.getItemAsync('userData');
+      const parsedUser = userData ? JSON.parse(userData) : null;
+
+      if (!parsedUser) throw new Error('User not found');
+
+      const attemptData = {
+        userId: parsedUser.id,
+        lessonId,
+        score,
+        totalItems: questions.length,
+        correctAnswers: score,
+      };
+
+      await axios.post('http://10.0.2.2:5000/api/attempts', attemptData);
+
+      console.log('Attempt submitted');
+    } catch (err) {
+      console.error('Error submitting attempt:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (!started) {
     return (
       <KeyboardAvoidingView behavior="padding" style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -168,13 +204,15 @@ export default function QuizScreen() {
         <Text variant="headlineLarge" style={{ color: theme.colors.primary }}>
           Quiz Complete! {resultEmoji}
         </Text>
-        <Text variant="titleMedium" style={{ marginVertical: 10 }}>
-          {resultMessage}
-        </Text>
+        <Text variant="titleMedium" style={{ marginVertical: 10 }}>{resultMessage}</Text>
         <Text variant="titleLarge">{score} / {questions.length} ({percentage}%)</Text>
-        <Button mode="contained" onPress={restartQuiz} style={{ marginTop: 20 }} icon="refresh">
-          Try Again
-        </Button>
+        {saving ? (
+          <ActivityIndicator animating={true} style={{ marginTop: 20 }} />
+        ) : (
+          <Button mode="contained" onPress={restartQuiz} style={{ marginTop: 20 }} icon="refresh">
+            Try Again
+          </Button>
+        )}
       </View>
     );
   }
@@ -239,7 +277,7 @@ export default function QuizScreen() {
       </Animated.View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

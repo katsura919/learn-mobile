@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Image, Alert } from "react-native";
+import { View, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { Appbar, Card, Text, useTheme, Avatar } from "react-native-paper";
 import * as SecureStore from "expo-secure-store";
 import { fetchHomeStats } from "../../utils/profileServices";
 import { useAppTheme } from "@/hooks/themeContext";
+import { getUserProfile } from "@/utils/settingsService"; 
+import AttemptGraph from "@/components/profile/attempt-graph";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -24,7 +26,9 @@ export default function ProfileScreen() {
         const userData = await SecureStore.getItemAsync("userData");
         if (userData) {
           const parsed = JSON.parse(userData);
-          setUser(parsed);
+          const userProfile = await getUserProfile(parsed.id); 
+          setUser(userProfile);
+
           const statsData = await fetchHomeStats(parsed.id);
           setStats(statsData);
         }
@@ -33,6 +37,7 @@ export default function ProfileScreen() {
         console.error(error);
       }
     };
+
     fetchData();
   }, []);
 
@@ -43,7 +48,14 @@ export default function ProfileScreen() {
       {/* Header */}
       <Appbar.Header mode="small" style={{ backgroundColor: theme.colors.background }}>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title="Profile" titleStyle={{ color: theme.colors.onBackground, fontFamily: 'Inter-Medium', fontSize: 16,  }} />
+        <Appbar.Content
+          title="Profile"
+          titleStyle={{
+            color: theme.colors.onBackground,
+            fontFamily: "Inter-Medium",
+            fontSize: 16,
+          }}
+        />
         <Appbar.Action icon="cog-outline" onPress={() => router.push("/Settings")} />
       </Appbar.Header>
 
@@ -51,22 +63,45 @@ export default function ProfileScreen() {
       <Card style={[styles.profileCard, { backgroundColor: theme.colors.surface }]}>
         <Card.Content style={{ alignItems: "center" }}>
           <Avatar.Image
-                     size={90}
-                     source={
-                       user?.profilePic
-                         ? { uri: user.profilePic }
-                         : require('@/assets/images/profile.png')
-                     }
-                     style={styles.avatar}
-            />
-           
-          <Text variant="titleLarge" style={{ color: theme.colors.onBackground, fontFamily: 'Inter-Medium', fontSize: 16 }}>
+            size={90}
+            source={
+              user?.profilePic
+                ? { uri: user.profilePic }
+                : require("@/assets/images/profile.png")
+            }
+            style={styles.avatar}
+          />
+
+          <Text
+            variant="titleLarge"
+            style={{
+              color: theme.colors.onBackground,
+              fontFamily: "Inter-Medium",
+              fontSize: 16,
+            }}
+          >
             {user.firstName} {user.lastName}
           </Text>
-          <Text variant="bodyMedium" style={{ color: theme.colors.onBackground, fontFamily: 'Inter-Regular', fontSize: 12, opacity: 0.7 }}>
+          <Text
+            variant="bodyMedium"
+            style={{
+              color: theme.colors.onBackground,
+              fontFamily: "Inter-Regular",
+              fontSize: 12,
+              opacity: 0.7,
+            }}
+          >
             @{user.username}
           </Text>
-          <Text variant="bodySmall" style={{ color: theme.colors.onBackground, fontFamily: 'Inter-Regular', fontSize: 12, opacity: 0.5 }}>
+          <Text
+            variant="bodySmall"
+            style={{
+              color: theme.colors.onBackground,
+              fontFamily: "Inter-Regular",
+              fontSize: 12,
+              opacity: 0.5,
+            }}
+          >
             {user.email}
           </Text>
         </Card.Content>
@@ -76,31 +111,63 @@ export default function ProfileScreen() {
       <Card style={[styles.statsCard, { backgroundColor: theme.colors.surface }]}>
         <Card.Content style={styles.statsContent}>
           <View style={styles.statItem}>
-            <Text variant="titleMedium" style={{ color: theme.colors.onSurface, fontFamily: 'Inter-Regular' }}>
+            <Text
+              variant="titleMedium"
+              style={{ color: theme.colors.onSurface, fontFamily: "Inter-Regular" }}
+            >
               {stats.totalLessons}
             </Text>
-            <Text variant="bodySmall" style={{ color: theme.colors.onSurface, fontFamily: 'Inter-Regular',opacity: 0.6 }}>
+            <Text
+              variant="bodySmall"
+              style={{
+                color: theme.colors.onSurface,
+                fontFamily: "Inter-Regular",
+                opacity: 0.6,
+              }}
+            >
               Lessons
             </Text>
           </View>
           <View style={styles.statItem}>
-            <Text variant="titleMedium" style={{ color: theme.colors.onSurface, fontFamily: 'Inter-Regular' }}>
+            <Text
+              variant="titleMedium"
+              style={{ color: theme.colors.onSurface, fontFamily: "Inter-Regular" }}
+            >
               {stats.totalAttempts}
             </Text>
-            <Text variant="bodySmall" style={{ color: theme.colors.onSurface, fontFamily: 'Inter-Regular', opacity: 0.6 }}>
+            <Text
+              variant="bodySmall"
+              style={{
+                color: theme.colors.onSurface,
+                fontFamily: "Inter-Regular",
+                opacity: 0.6,
+              }}
+            >
               Quiz Attempts
             </Text>
           </View>
           <View style={styles.statItem}>
-            <Text variant="titleMedium" style={{ color: theme.colors.onSurface, fontFamily: 'Inter-Regular'}}>
+            <Text
+              variant="titleMedium"
+              style={{ color: theme.colors.onSurface, fontFamily: "Inter-Regular" }}
+            >
               {stats.averageScore.toFixed(0)}%
             </Text>
-            <Text variant="bodySmall" style={{ color: theme.colors.onSurface, fontFamily: 'Inter-Regular', opacity: 0.6 }}>
+            <Text
+              variant="bodySmall"
+              style={{
+                color: theme.colors.onSurface,
+                fontFamily: "Inter-Regular",
+                opacity: 0.6,
+              }}
+            >
               Accuracy
             </Text>
           </View>
         </Card.Content>
       </Card>
+      
+      <AttemptGraph />
     </View>
   );
 }

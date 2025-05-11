@@ -46,7 +46,7 @@ export default function ChangePasswordScreen() {
     const newErrors = { currentPassword: "", newPassword: "", confirmNewPassword: "" };
 
     if (!currentPassword) newErrors.currentPassword = "Current password is required.";
-    if (newPassword.length < 6) newErrors.newPassword = "New password must be at least 6 characters.";
+    if (newPassword.length < 8) newErrors.newPassword = "New password must be at least 8 characters.";
     if (newPassword !== confirmNewPassword) newErrors.confirmNewPassword = "Passwords do not match.";
 
     setErrors(newErrors);

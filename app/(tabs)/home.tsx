@@ -7,6 +7,8 @@ import { router, useFocusEffect } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/hooks/themeContext'; 
 import socket, { connectSocket } from '@/utils/socket';
+import AppHeader from '@/components/home/home-header';
+
 
 const { width } = Dimensions.get('window');
 const CARD_PADDING = 16;
@@ -144,40 +146,7 @@ const Home = () => {
         backgroundColor={theme.colors.background} 
       />
 
-      <Appbar.Header style={{ backgroundColor: theme.colors.background, elevation: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <TouchableOpacity onPress={() => router.push('/profile')}>
-          <Avatar.Image
-            size={40}
-            source={
-              user?.profilePic
-                ? { uri: user.profilePic }
-                : require('@/assets/images/profile.png')
-            }
-            style={{ marginLeft: 12 }}
-          />
-        </TouchableOpacity>
-
-
-          {user?.firstName && user?.lastName && (
-            <Text
-              style={{
-                marginLeft: 12,
-                fontSize: 16,
-                fontFamily: 'Inter-Medium', 
-                color: theme.colors.onBackground,
-              }}
-            >
-              {user.firstName} {user.lastName}
-            </Text>
-          )}
-        </View>
-
-        <Appbar.Action
-          icon={isDark ? 'white-balance-sunny' : 'weather-night'}
-          onPress={toggleTheme}
-        />
-      </Appbar.Header>
+      <AppHeader />
 
       <View style={{ paddingHorizontal: CARD_PADDING }}>
         <Animated.View style={{ width: searchAnim }}>
