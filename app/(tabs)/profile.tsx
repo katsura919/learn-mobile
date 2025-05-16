@@ -6,7 +6,7 @@ import * as SecureStore from "expo-secure-store";
 import { fetchHomeStats } from "../../utils/profileServices";
 import { useAppTheme } from "@/hooks/themeContext";
 import { getUserProfile } from "@/utils/settingsService"; 
-import AttemptGraph from "@/components/profile/attempt-graph";
+import AttemptGraph from "@/components/profilee/attempt-graph";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -172,8 +172,7 @@ export default function ProfileScreen() {
           </View>
         </Card.Content>
       </Card>
-      
-      <AttemptGraph />
+      <AttemptGraph/>
     </View>
   );
 }
