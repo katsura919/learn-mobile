@@ -40,7 +40,7 @@ const Home = () => {
   initializeSocket();
 
   return () => {
-    socket.off("category_created"); // clean up on unmount
+    socket.off("category_created"); 
   };
 }, []);
 
