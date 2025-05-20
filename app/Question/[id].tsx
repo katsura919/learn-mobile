@@ -75,18 +75,21 @@ const ViewQuestionsScreen = () => {
       <Appbar.Header elevated style={{ backgroundColor: theme.colors.surface }}>
         <Appbar.BackAction onPress={() => router.back()} color={theme.colors.onSurface} />
         <Appbar.Content title="Questions" titleStyle={{ color: theme.colors.onSurface }} />
-        <Appbar.Action
-          icon={isEditMode ? 'content-save' : 'pencil'}
-          color={theme.colors.onSurface}
-          onPress={() => {
-            if (isEditMode) {
-              handleSaveQuestions();
-            } else {
-              setEditableQuestions(questions.map((q) => ({ ...q })));
-              setIsEditMode(true);
-            }
-          }}
-        />
+        {questions.length > 0 && (
+          <Appbar.Action
+            icon={isEditMode ? 'content-save' : 'pencil'}
+            color={theme.colors.onSurface}
+            onPress={() => {
+              if (isEditMode) {
+                handleSaveQuestions();
+              } else {
+                setEditableQuestions(questions.map((q) => ({ ...q })));
+                setIsEditMode(true);
+              }
+            }}
+          />
+        )}
+
       </Appbar.Header>
 
       {questions.length === 0 ? (

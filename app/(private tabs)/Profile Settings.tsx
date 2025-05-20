@@ -121,96 +121,118 @@ const SettingsScreen = () => {
     }, [])
   );
 
-  if (loading) return <ActivityIndicator style={{ marginTop: 50 }} animating={true} />;
+  if (loading) {
+  return (
+    <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
+      <ActivityIndicator animating={true} size="large" color={theme.colors.primary} />
+    </View>
+  );
+}
+
 
   if (!user) return <Text>Unable to load user data</Text>;
 
   return (
-    <>
-      <Appbar.Header mode="small" style={{ backgroundColor: theme.colors.background }}>
-        <Appbar.BackAction onPress={() => navigation.goBack()} />
-        <Appbar.Content 
-          title="Profile"
-          titleStyle={{
-            color: theme.colors.onBackground,
-            fontFamily: "Inter-Medium",
-            fontSize: 16,
-          }}
-          />
-      </Appbar.Header>
+  <>
+    <Appbar.Header mode="small" style={{ backgroundColor: theme.colors.background }}>
+      <Appbar.BackAction onPress={() => navigation.goBack()} />
+      <Appbar.Content
+        title="Profile"
+        titleStyle={{
+          color: theme.colors.onBackground,
+          fontFamily: 'Inter-Medium',
+          fontSize: 16,
+        }}
+      />
+    </Appbar.Header>
 
-      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-        <TouchableOpacity
-          onPress={pickImage}
-          style={styles.imageContainer}
-          disabled={updating}
-        >
-          {selectedImage ? (
-            <Image
-              source={{ uri: selectedImage.uri }}
-              style={styles.profileImage}
-            />
-          ) : user.profilePic ? (
-            <Avatar.Image size={100} source={{ uri: user.profilePic }} />
-          ) : (
-            <Avatar.Icon size={100} icon="account" />
-          )}
-          <Text style={{ marginTop: 10 }}>
-            {updating ? 'Uploading...' : 'Tap to change profile picture'}
-          </Text>
-        </TouchableOpacity>
-
-        <TextInput
-          label="First Name"
-          value={user.firstName}
-          onChangeText={(text) => handleFieldChange('firstName', text)}
-          style={styles.input}
-          disabled={updating}
-        />
-        <TextInput
-          label="Last Name"
-          value={user.lastName}
-          onChangeText={(text) => handleFieldChange('lastName', text)}
-          style={styles.input}
-          disabled={updating}
-        />
-        <TextInput
-          label="Username"
-          value={user.username}
-          onChangeText={(text) => handleFieldChange('username', text)}
-          style={styles.input}
-          disabled={updating}
-        />
-        <TextInput
-          label="Email"
-          value={user.email}
-          onChangeText={(text) => handleFieldChange('email', text)}
-          style={styles.input}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          disabled={updating}
-        /> 
-
-        <Button
-          mode="contained"
-          loading={updating}
-          onPress={handleSave}
-          disabled={!hasChanges && !selectedImage || updating}
-        >
-          {updating ? 'Saving...' : 'Save Changes'}
-        </Button>
-      </View>
-
-      <Snackbar
-        visible={snackbarVisible}
-        onDismiss={() => setSnackbarVisible(false)}
-        duration={3000}
-        style={{ backgroundColor: snackbarError ? theme.colors.error : theme.colors.primary }}
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <TouchableOpacity
+        onPress={pickImage}
+        style={styles.imageContainer}
+        disabled={updating}
       >
-        {snackbarMessage}
-      </Snackbar>
-    </>
+        {selectedImage ? (
+          <Image source={{ uri: selectedImage.uri }} style={styles.profileImage} />
+        ) : user.profilePic ? (
+          <Avatar.Image size={100} source={{ uri: user.profilePic }} />
+        ) : (
+          <Avatar.Icon size={100} icon="account" />
+        )}
+        <Text style={{ marginTop: 10, fontFamily: 'Inter-Regular' }}>
+          {updating ? 'Uploading...' : 'Tap to change profile picture'}
+        </Text>
+      </TouchableOpacity>
+
+      <TextInput
+        label="First Name"
+        value={user.firstName}
+        onChangeText={(text) => handleFieldChange('firstName', text)}
+        style={styles.input}
+        mode="outlined"
+        dense
+        disabled={updating}
+      />
+      <TextInput
+        label="Last Name"
+        value={user.lastName}
+        onChangeText={(text) => handleFieldChange('lastName', text)}
+        style={styles.input}
+        mode="outlined"
+        dense
+        disabled={updating}
+      />
+      <TextInput
+        label="Username"
+        value={user.username}
+        onChangeText={(text) => handleFieldChange('username', text)}
+        style={styles.input}
+        mode="outlined"
+        dense
+        disabled={updating}
+      />
+      <TextInput
+        label="Email"
+        value={user.email}
+        onChangeText={(text) => handleFieldChange('email', text)}
+        style={styles.input}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        mode="outlined"
+        dense
+        disabled={updating}
+      />
+
+      <Button
+        mode="contained"
+        onPress={handleSave}
+        disabled={(!hasChanges && !selectedImage) || updating}
+        contentStyle={{ paddingVertical: 6 }}
+        style={styles.saveButton}
+      >
+        {updating ? 'Saving...' : 'Save Changes'}
+      </Button>
+    </View>
+
+    {updating && (
+      <View style={styles.loadingOverlay}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    )}
+
+    <Snackbar
+      visible={snackbarVisible}
+      onDismiss={() => setSnackbarVisible(false)}
+      duration={3000}
+      style={{
+        backgroundColor: snackbarError ? theme.colors.error : theme.colors.primary,
+      }}
+    >
+      {snackbarMessage}
+    </Snackbar>
+  </>
   );
+
 };
 
 const styles = StyleSheet.create({
@@ -228,15 +250,27 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   input: {
-    marginBottom: 10,
+    marginBottom: 12,
+    borderRadius: 10,
   },
+  saveButton: {
+    marginTop: 12,
+    borderRadius: 10,
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  loadingContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
 
-  snackbar: {
-    position: 'absolute',
-    bottom: 0,
-    width: Dimensions.get('window').width,
-    borderRadius: 0,
-  },
 });
+
 
 export default SettingsScreen;

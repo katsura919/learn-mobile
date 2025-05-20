@@ -59,7 +59,7 @@ export default function LessonList() {
   };
 
   const handleDelete = async () => {
-    Alert.alert("Delete Category", "Are you sure you want to delete this category?", [
+    Alert.alert("Delete Category", "Deleting a category will delete the rest of the lessons under it.", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Delete",
@@ -197,7 +197,7 @@ export default function LessonList() {
                         style={{
                           color: colors.onSurface,
                           marginBottom: 6,
-                          fontWeight: "600",
+                          fontFamily: "Inter-Medium",
                         }}
                       >
                         {item.title}
@@ -205,7 +205,7 @@ export default function LessonList() {
 
                       <Text
                         variant="bodySmall"
-                        style={{ color: colors.onSurface }}
+                        style={{ color: colors.onSurface, fontFamily: "Inter-Regular", }}
                         numberOfLines={4}
                       >
                         {item.content}
@@ -214,8 +214,9 @@ export default function LessonList() {
                       <Text
                         style={{
                           marginTop: 12,
-                          fontSize: 12,
-                          color: colors.outline,
+                          fontSize: 10,
+                          color: colors.onSurface,
+                          fontFamily: "Inter-Regular",
                         }}
                       >
                         {new Date(item.createdAt).toLocaleDateString()}

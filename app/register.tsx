@@ -1,10 +1,12 @@
-import { View, Text, TextInput, TouchableOpacity, Alert, StatusBar } from "react-native";
+import { View, StyleSheet, StatusBar, TouchableOpacity } from "react-native";
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import LottieView from "lottie-react-native";
 import axios from "axios";
 import { SafeAreaView } from "react-native-safe-area-context";
+import LottieView from "lottie-react-native";
+import { MaterialIcons } from "@expo/vector-icons";
+import * as Animatable from "react-native-animatable";
+import { Text, TextInput, Button, Snackbar } from "react-native-paper";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -17,141 +19,193 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL; 
-  console.log('API URL:', apiUrl);
+  const [error, setError] = useState("");
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarColor, setSnackbarColor] = useState("red");
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+
   const handleRegister = async () => {
-    if (!firstName || !lastName || !username || !email || !password || !confirmPassword) {
-      Alert.alert("Error", "All fields are required.");
-      return;
-    }
+  if (!firstName || !lastName || !username || !email || !password || !confirmPassword) {
+    setError("All fields are required.");
+    setSnackbarColor("#ff3d51");
+    setSnackbarVisible(true);
+    return;
+  }
 
-    if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match.");
-      return;
-    }
+  if (password !== confirmPassword) {
+    setError("Passwords do not match.");
+    setSnackbarColor("#ff3d51");
+    setSnackbarVisible(true);
+    return;
+  }
 
-    try {
-      setLoading(true);
-      const response = await axios.post(`${apiUrl}auth/register`, {
-        firstName,
-        lastName,
-        username,
-        email,
-        password,
-      });
+  try {
+    setLoading(true);
+    await axios.post(`${apiUrl}/auth/register`, {
+      firstName,
+      lastName,
+      username,
+      email,
+      password,
+    });
 
-      Alert.alert("Success", "Account created successfully!");
-      router.replace("/login");
-    } catch (error:any) {
-      console.error("Registration failed:", error);
-      Alert.alert("Error", error.response?.data?.error || "Registration failed. Please try again.");
-    } finally {
-      setLoading(false);
+    setSnackbarColor("#51cf66");
+    setError("Account created successfully!");
+    setSnackbarVisible(true);
+    setTimeout(() => router.replace("/login"), 1500);
+  } catch (err: any) {
+    const serverErrors = err.response?.data?.errors;
+    if (Array.isArray(serverErrors) && serverErrors.length > 0) {
+      setError(serverErrors.join("\n"));
+    } else {
+      setError("Registration failed. Please try again.");
     }
+    setSnackbarColor("#ff3d51");
+    setSnackbarVisible(true);
+  } finally {
+    setLoading(false);
+  }
   };
 
+
   return (
-    <SafeAreaView style={{ flex: 1, padding: 20, paddingTop: 30, justifyContent: "center", backgroundColor: "#f8f9fa" }}>
-      <StatusBar barStyle="light-content" backgroundColor="black" />
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <Animatable.View animation="fadeInDown" duration={800}>
         <LottieView
-          source={step === 1 ? require("../assets/lotties/hello.json") : require("../assets/lotties/register.json")}
+          source={require("../assets/lotties/register.json")}
           autoPlay
           loop
-          style={{ width: 250, height: 250 }}
+          style={{ width: 250, height: 250, alignSelf: "center" }}
         />
+      </Animatable.View>
 
-        <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 10 }}>📝 Register</Text>
-        <Text style={{ fontSize: 16, color: "#6c757d", marginBottom: 10 }}>Create your account</Text>
+      <Animatable.View animation="fadeInUp" delay={200} style={styles.form}>
+        <Text variant="headlineMedium" style={styles.title}>REGISTER</Text>
+        <Text variant="bodyMedium" style={styles.subtitle}>Create a new account</Text>
 
-        {/* Fixed height wrapper for inputs */}
-        <View style={{ width: "100%", minHeight: 300, justifyContent: "center" }}>
-          {step === 1 ? (
-            <>
-              <TextInput
-                placeholder="First Name"
-                value={firstName}
-                onChangeText={setFirstName}
-                style={{ width: "100%", height: 50, borderWidth: 1, borderColor: "#ccc", borderRadius: 30, paddingHorizontal: 15, marginBottom: 10, backgroundColor: "#fff", fontSize: 16 }}
-              />
-              <TextInput
-                placeholder="Last Name"
-                value={lastName}
-                onChangeText={setLastName}
-                style={{ width: "100%", height: 50, borderWidth: 1, borderColor: "#ccc", borderRadius: 30, paddingHorizontal: 15, marginBottom: 10, backgroundColor: "#fff", fontSize: 16 }}
-              />
-              <TextInput
-                placeholder="Username"
-                value={username}
-                onChangeText={setUsername}
-                style={{ width: "100%", height: 50, borderWidth: 1, borderColor: "#ccc", borderRadius: 30, paddingHorizontal: 15, marginBottom: 10, backgroundColor: "#fff", fontSize: 16 }}
-              />
-              <TextInput
-                placeholder="Email"
-                keyboardType="email-address"
-                value={email}
-                onChangeText={setEmail}
-                style={{ width: "100%", height: 50, borderWidth: 1, borderColor: "#ccc", borderRadius: 30, paddingHorizontal: 15, marginBottom: 10, backgroundColor: "#fff", fontSize: 16 }}
-              />
-            </>
-          ) : (
-            <>
-              <View style={{ flexDirection: "row", alignItems: "center", width: "100%", height: 50, borderWidth: 1, borderColor: "#ccc", borderRadius: 30, paddingHorizontal: 15, marginBottom: 10, backgroundColor: "#fff" }}>
-                <TextInput
-                  placeholder="Password"
-                  secureTextEntry={!showPassword}
-                  value={password}
-                  onChangeText={setPassword}
-                  style={{ flex: 1, fontSize: 16 }}
-                />
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                  <Ionicons name={showPassword ? "eye-off" : "eye"} size={24} color="gray" />
-                </TouchableOpacity>
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center", width: "100%", height: 50, borderWidth: 1, borderColor: "#ccc", borderRadius: 30, paddingHorizontal: 15, marginBottom: 10, backgroundColor: "#fff" }}>
-                <TextInput
-                  placeholder="Confirm Password"
-                  secureTextEntry={!showPassword}
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  style={{ flex: 1, fontSize: 16 }}
-                />
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                  <Ionicons name={showPassword ? "eye-off" : "eye"} size={24} color="gray" />
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
+        {step === 1 ? (
+          <>
+            <TextInput label="First Name" value={firstName} onChangeText={setFirstName} style={styles.input} textColor="#fff" underlineColor="#555" activeUnderlineColor="#fff" placeholderTextColor="#888" theme={{ colors: { primary: "#fff" } }} left={<TextInput.Icon icon={() => <MaterialIcons name="person" size={20} color="#ccc" />} />} />
+            <TextInput label="Last Name" value={lastName} onChangeText={setLastName} style={styles.input} textColor="#fff" underlineColor="#555" activeUnderlineColor="#fff" placeholderTextColor="#888" theme={{ colors: { primary: "#fff" } }} left={<TextInput.Icon icon={() => <MaterialIcons name="person" size={20} color="#ccc" />} />} />
+            <TextInput label="Username" value={username} onChangeText={setUsername} style={styles.input} textColor="#fff" underlineColor="#555" activeUnderlineColor="#fff" placeholderTextColor="#888" theme={{ colors: { primary: "#fff" } }} left={<TextInput.Icon icon={() => <MaterialIcons name="account-circle" size={20} color="#ccc" />} />} />
+            <TextInput label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" style={styles.input} textColor="#fff" underlineColor="#555" activeUnderlineColor="#fff" placeholderTextColor="#888" theme={{ colors: { primary: "#fff" } }} left={<TextInput.Icon icon={() => <MaterialIcons name="email" size={20} color="#ccc" />} />} />
+          </>
+        ) : (
+          <>
+            <TextInput label="Password" value={password} onChangeText={setPassword} secureTextEntry={!showPassword} style={styles.input} textColor="#fff" underlineColor="#555" activeUnderlineColor="#fff" placeholderTextColor="#888" theme={{ colors: { primary: "#fff" } }} left={<TextInput.Icon icon={() => <MaterialIcons name="lock" size={20} color="#ccc" />} />} right={<TextInput.Icon icon={() => <MaterialIcons name={showPassword ? "visibility" : "visibility-off"} size={20} color="#ccc" />} onPress={() => setShowPassword((prev) => !prev)} />} />
+            <TextInput label="Confirm Password" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry={!showPassword} style={styles.input} textColor="#fff" underlineColor="#555" activeUnderlineColor="#fff" placeholderTextColor="#888" theme={{ colors: { primary: "#fff" } }} left={<TextInput.Icon icon={() => <MaterialIcons name="lock" size={20} color="#ccc" />} />} right={<TextInput.Icon icon={() => <MaterialIcons name={showPassword ? "visibility" : "visibility-off"} size={20} color="#ccc" />} onPress={() => setShowPassword((prev) => !prev)} />} />
+          </>
+        )}
+
+       <Button
+          mode="contained"
+          onPress={() => (step === 1 ? setStep(2) : handleRegister())}
+          style={[
+            styles.button,
+            step === 1 && (!firstName || !lastName || !username || !email) ? styles.buttonDisabled : null,
+          ]}
+          contentStyle={{ paddingVertical: 8 }}
+          loading={loading}
+          disabled={
+            loading || (step === 1 && (!firstName || !lastName || !username || !email))
+          }
+          labelStyle={{
+            color:
+              step === 1 && (!firstName || !lastName || !username || !email)
+                ? "#999"
+                : "#000",
+          }}
+        >
+          {step === 1 ? "Next" : "Register"}
+        </Button>
+
+        {step === 2 && (
+          <Button
+            mode="outlined"
+            onPress={() => setStep(1)}
+            style={styles.backButton}
+            textColor="#fff"
+            contentStyle={{ paddingVertical: 6 }}
+          >
+            Back
+          </Button>
+        )}
+
+        <Button
+          onPress={() => router.replace("/login")}
+          mode="text"
+          textColor="#aaa"
+          style={{ marginTop: 8 }}
+        >
+          Already have an account? Sign in
+        </Button>
+        </Animatable.View>
+
+        <View style={styles.snackbarContainer}>
+          <Snackbar
+            visible={snackbarVisible}
+            onDismiss={() => setSnackbarVisible(false)}
+            duration={3000}
+            style={[styles.snackbar, { backgroundColor: snackbarColor }]}
+          >
+            {error}
+          </Snackbar>
         </View>
 
-        <TouchableOpacity onPress={() => router.replace("/login")} style={{ marginTop: 10 }}>
-          <Text style={{ color: "#007bff", fontSize: 16 }}>Already have an account? Sign in</Text>
-        </TouchableOpacity>
-
-        {/* Navigation buttons and dots */}
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%", marginTop: 20, marginBottom: 20}}>
-          <TouchableOpacity
-            disabled={step === 1}
-            onPress={() => setStep(step - 1)}
-          >
-            <Text style={{ fontSize: 16, color: step === 1 ? "#ccc" : "black" }}>BACK</Text>
-          </TouchableOpacity>
-
-          <View style={{ flexDirection: "row", gap: 6 }}>
-            <View style={{ width: 10, height: 10, borderRadius: 50, backgroundColor: step === 1 ? "#007bff" : "#ccc", marginHorizontal: 5 }} />
-            <View style={{ width: 10, height: 10, borderRadius: 50, backgroundColor: step === 2 ? "#007bff" : "#ccc", marginHorizontal: 5 }} />
-          </View>
-
-          <TouchableOpacity
-            onPress={() => {
-              if (step === 1) setStep(2);
-              else handleRegister();
-            }}
-          >
-            <Text style={{ fontSize: 16, color: "black" }}>{step === 1 ? "NEXT" : loading ? "REGISTERING..." : "REGISTER"}</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#000",
+    paddingHorizontal: 20,
+    justifyContent: "center",
+  },
+  form: {
+    marginTop: 10,
+  },
+  title: {
+    color: "#fff",
+    textAlign: "center",
+    marginBottom: 8,
+    fontFamily: 'Inter-Bold'
+  },
+  subtitle: {
+    color: "#aaa",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  input: {
+    backgroundColor: "transparent",
+    marginBottom: 10,
+  },
+  button: {
+    borderRadius: 30,
+    marginTop: 10,
+    backgroundColor: "#ffffff",
+  },
+
+  buttonDisabled: {
+  backgroundColor: "#ccc",
+  },
+  backButton: {
+    borderColor: "#fff",
+    marginTop: 10,
+  },
+  snackbarContainer: {
+  position: "absolute",
+  bottom: 10,
+  left: 0,
+  right: 0,
+  paddingHorizontal: 10,
+},
+
+snackbar: {
+  borderRadius: 10,
+  width: "100%",
+},
+
+});

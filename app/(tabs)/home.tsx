@@ -79,25 +79,31 @@ const Home = () => {
   });
 
   const renderItem = ({ item }: { item: any }) => (
-    <Card
+   <Card
       onPress={() => router.push(`/Lesson List/${item._id}?name=${item.name}`)}
       style={{
         flex: 1,
         margin: SPACING / 4,
-        borderRadius: 8,
-        elevation: 3,
+        borderRadius: 16,
         backgroundColor: theme.colors.surface,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        elevation: 3,
       }}
     >
+
       <Card.Content
         style={{
           flexDirection: isGridView ? 'column' : 'row',
           alignItems: 'center',
-          justifyContent: isGridView ? 'center' : 'flex-start',
-          paddingVertical: 16,
-          paddingHorizontal: 8,
+          justifyContent: 'flex-start',
+          paddingVertical: 20,
+          paddingHorizontal: 12,
         }}
       >
+
         <MaterialIcons
           name="folder-open"
           size={isGridView ? 56 : 48}
